@@ -7,7 +7,7 @@ sub.add_parser('inbox')
 a=sub.add_parser('show');a.add_argument('id')
 a=sub.add_parser('close');a.add_argument('id')
 a=sub.add_parser('publish');a.add_argument('id');a.add_argument('--status',choices=['live','archived'],required=True);a.add_argument('--category',required=True)
-a=sub.add_parser('status');a.add_argument('id');a.add_argument('status',choices=['live','archived'])
+a=sub.add_parser('status');a.add_argument('id');a.add_argument('status',choices=['live','archived','hidden'])
 a=sub.add_parser('edit');a.add_argument('id');a.add_argument('--title');a.add_argument('--description');a.add_argument('--url');a.add_argument('--author')
 args=p.parse_args();init()
 with connect() as d:

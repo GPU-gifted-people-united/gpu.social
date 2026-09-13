@@ -4,7 +4,11 @@ import server
 class API(unittest.TestCase):
  @classmethod
  def setUpClass(cls):
-  server.init();cls.http=server.ThreadingHTTPServer(('127.0.0.1',0),server.Handler);cls.base='http://127.0.0.1:'+str(cls.http.server_port);threading.Thread(target=cls.http.serve_forever,daemon=True).start()
+  server.init()
+  with server.connect() as d:
+   for pid in ['logo-maker','fixture-2','fixture-3']:
+    d.execute('INSERT INTO projects VALUES(?,?,?,?,?,?,?,?)',(pid,'Fixture','Test project','Test','archived','','Test',0))
+  cls.http=server.ThreadingHTTPServer(('127.0.0.1',0),server.Handler);cls.base='http://127.0.0.1:'+str(cls.http.server_port);threading.Thread(target=cls.http.serve_forever,daemon=True).start()
  @classmethod
  def tearDownClass(cls):cls.http.shutdown();cls.http.server_close()
  def req(self,data=None,origin='http://localhost:9327',path='/workshop/api/submissions'):

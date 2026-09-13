@@ -40,7 +40,7 @@ class Handler(BaseHTTPRequestHandler):
  def do_GET(self):
   path=urlparse(self.path).path
   if path==BASE+'/api/projects':
-   with connect() as d: rows=[dict(r) for r in d.execute('SELECT * FROM projects ORDER BY created,id')]
+   with connect() as d: rows=[dict(r) for r in d.execute("SELECT * FROM projects WHERE status IN ('live','archived') ORDER BY created,id")]
    return self.send(200,rows)
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
   routes={'/':'index.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/favicon.svg':'favicon.svg'}
@@ -78,7 +78,7 @@ class Handler(BaseHTTPRequestHandler):
    d.execute('BEGIN IMMEDIATE'); d.execute('DELETE FROM limits WHERE created<?',(now-3600,))
    if d.execute('SELECT count(*) FROM limits WHERE ip=?',(ip,)).fetchone()[0]>=8:return self.send(429,{'error':'Слишком много заявок. Попробуйте через час.'})
    if vals['kind']=='revive':
-    project=d.execute('SELECT title FROM projects WHERE id=?',(vals['project_id'],)).fetchone()
+    project=d.execute("SELECT title FROM projects WHERE id=? AND status IN ('live','archived')",(vals['project_id'],)).fetchone()
     if not project:return self.send(400,{'error':'Проект не найден.'})
     vals['title']=project['title']; h=hashlib.sha256(vals['contact'].lower().encode()).hexdigest()
     if d.execute('SELECT 1 FROM interests WHERE project_id=? AND contact_hash=?',(vals['project_id'],h)).fetchone():return self.send(200,{'ok':True,'duplicate':True})
