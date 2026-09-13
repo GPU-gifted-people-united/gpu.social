@@ -1,0 +1,21 @@
+[Unit]
+Description=GPU community workshop
+After=network.target
+[Service]
+Type=simple
+DynamicUser=yes
+StateDirectory=gpu-workshop
+StateDirectoryMode=0700
+WorkingDirectory=/opt/gpu-workshop/current
+Environment=GPU_DB=/var/lib/gpu-workshop/workshop.sqlite3
+ExecStart=/usr/bin/python3 /opt/gpu-workshop/current/server.py --host 127.0.0.1 --port 9327
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_INET AF_UNIX
+UMask=0077
+[Install]
+WantedBy=multi-user.target

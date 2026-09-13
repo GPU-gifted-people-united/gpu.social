@@ -1,0 +1,5 @@
+[
+ {"id":"yukaresearch","title":"YukaResearch","description":"Каталог проектов Kickstarter: изучить электронику, сравнить сборы и найти интересные идеи для своего исследования.","category":"Исследования","status":"live","url":"https://gpu.social/kickstarter/","author":"Yuka"},
+ {"id":"pinock-space","title":"pinock / space","description":"Галерея космического AI-арта. Смотреть, скачивать изображения и исследовать ретрофутуристические миры.","category":"Творчество","status":"live","url":"https://pinock.io/space","author":"GPU"},
+ {"id":"logo-maker","title":"AI Logo Maker","description":"Генератор концептов логотипа по описанию бренда. Старая страница сейчас недоступна — можно оставить запрос на возвращение.","category":"Творчество","status":"archived","url":"","author":"GPU"}
+]
