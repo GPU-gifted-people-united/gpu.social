@@ -29,6 +29,8 @@ class API(unittest.TestCase):
   self.assertEqual(self.req(data,origin='https://evil.example')[0],403)
   self.assertEqual(self.req({**data,'consent':False})[0],400)
   self.assertEqual(self.req({**data,'contact':'invalid'})[0],400)
+  self.assertEqual(self.req({**data,'contact':'https://www.linkedin.com/in/test-person/'})[0],201)
+  self.assertEqual(self.req({**data,'contact':'https://evil.example/in/test-person/'})[0],400)
   self.assertEqual(self.req({**data,'url':'javascript:alert(1)'})[0],400)
   self.assertEqual(self.req({**data,'kind':'revive','project_id':'missing'})[0],400)
  def test_deduplication(self):

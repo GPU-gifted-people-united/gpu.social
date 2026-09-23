@@ -25,6 +25,10 @@ def init():
 def valid_url(v):
  p=urlparse(v); return p.scheme in ('https','http') and bool(p.hostname) and not p.username and not p.password
 
+def valid_linkedin(v):
+ p=urlparse(v)
+ return p.scheme=='https' and p.hostname in ('linkedin.com','www.linkedin.com') and bool(re.fullmatch(r'/(in|pub)/[A-Za-z0-9_%.-]+/?',p.path)) and not p.username and not p.password
+
 class Handler(BaseHTTPRequestHandler):
  def setup(self):
   super().setup(); self.connection.settimeout(15)
@@ -62,8 +66,8 @@ class Handler(BaseHTTPRequestHandler):
    vals={k:str(obj.get(k,'')).strip() for k in ['kind','project_id','title','description','contact','url','author']}
    if vals['kind'] not in ('idea','project','revive'):raise ValueError()
    if not 10<=len(vals['description'])<=3000 or not 3<=len(vals['contact'])<=180:raise ValueError()
-   if not (re.fullmatch(r'@[A-Za-z0-9_]{5,32}',vals['contact']) or re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',vals['contact'])):
-    return self.send(400,{'error':'Укажите email или Telegram в формате @username.'})
+   if not (re.fullmatch(r'@[A-Za-z0-9_]{5,32}',vals['contact']) or re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',vals['contact']) or valid_linkedin(vals['contact'])):
+    return self.send(400,{'error':'Укажите email, Telegram @username или ссылку на профиль LinkedIn.'})
    if len(vals['title'])>120 or len(vals['author'])>100 or len(vals['url'])>1000:raise ValueError()
    if vals['url'] and not valid_url(vals['url']):return self.send(400,{'error':'Ссылка должна начинаться с https:// или http://.'})
    if vals['kind']!='revive' and len(vals['title'])<3:raise ValueError()
