@@ -7,6 +7,15 @@ from urllib.parse import urlparse
 ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
+EN_PROJECTS={
+ 'pinock-space':('Graphic content','An AI art gallery that automatically creates cosmic images. Explore, download, and edit them.'),
+ 'aiconic-space':('Written content','A stream of AI articles about tools and automation, with links to sources.'),
+ 'actor-replacement-studio':('Video and voice','A web studio for replacing a character and voice in a video. Try the public version.'),
+ 'codex-limits':('Tools','A macOS widget for monitoring Codex usage across separate accounts, including weekly remaining limits and reset times. Open source.'),
+ 'a5ed425d-f006-435e-ae60-0e9319e1b6c7':('Finance','Explore routes for cross-border transfers using estimates from public market data.'),
+ 'yukaresearch':('Research','Explore Kickstarter electronics projects, compare funding, and find ideas to investigate.'),
+ 'logo-maker':('Graphic content','A logo concept generator from a brand description. The old page is unavailable; you can ask to bring it back.')
+}
 
 def connect():
  db=sqlite3.connect(DB,timeout=15); db.row_factory=sqlite3.Row; return db
@@ -43,11 +52,15 @@ class Handler(BaseHTTPRequestHandler):
   self.end_headers(); self.wfile.write(data)
  def do_GET(self):
   path=urlparse(self.path).path
-  if path==BASE+'/api/projects':
+  if path in (BASE+'/api/projects','/en/api/projects'):
    with connect() as d: rows=[dict(r) for r in d.execute("SELECT * FROM projects WHERE status IN ('live','archived','development') ORDER BY created,id")]
+   if path.startswith('/en/'):
+    for row in rows:
+     category,description=EN_PROJECTS.get(row['id'],(row['category'],row['description']))
+     row['category'],row['description']=category,description
    return self.send(200,rows)
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
-  routes={'/':'index.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/favicon.svg':'favicon.svg'}
+  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/favicon.svg':'favicon.svg'}
   f=routes.get(path)
   if not f:return self.send(404,{'error':'Страница не найдена'})
   types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml'}

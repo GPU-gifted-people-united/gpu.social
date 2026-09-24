@@ -1,10 +1,132 @@
 'use strict';
-let projects=[],filter='all';
-const $=s=>document.querySelector(s), cards=$('#cards'), modal=$('#submit-dialog'),form=$('#submission');
-function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
-function render(){cards.replaceChildren();const q=$('#search').value.trim().toLocaleLowerCase('ru');const rows=projects.filter(p=>(filter==='all'||p.status===filter)&&[p.title,p.description,p.category,p.author].join(' ').toLocaleLowerCase('ru').includes(q));$('#count').textContent=projects.length;$('.filters').hidden=!projects.length;$('.search').hidden=!projects.length;for(const p of rows){const c=el('article','card');const kind=p.id==='pinock-space'?'space':p.id==='logo-maker'?'logo':p.id==='yukaresearch'?'research':'generic';const art=el('div','card-art '+kind);art.setAttribute('aria-hidden','true');art.append(el('span','art-label',p.category),el('strong','',kind==='space'?'space /':kind==='logo'?'Aa → Logo':kind==='research'?'Research.':p.title),el('span','art-number',String(projects.indexOf(p)+1).padStart(2,'0')));const body=el('div','card-body'),meta=el('div','card-meta');meta.append(el('span','',p.category),el('span','status '+(p.status==='archived'?'archived':''),p.status==='development'?'В разработке':p.status==='archived'?'В архиве':'Страница доступна'));body.append(meta,el('h3','',p.title),el('p','',p.description));const bottom=el('div','card-bottom');bottom.append(el('span','author',p.author));if(p.status==='live'&&/^https?:\/\//.test(p.url)){const a=el('a','card-action',p.id==='actor-replacement-studio'?'Хочу попробовать':'Посмотреть');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';a.append(el('span','','↗'));bottom.append(a);}else{const b=el('button','card-action',p.status==='development'?'Хочу попробовать':'Мне это нужно');b.type='button';b.append(el('span','','↗'));b.onclick=()=>openForm('revive',p);bottom.append(b);}body.append(bottom);c.append(art,body);cards.append(c);}if(!projects.length){const empty=el('div','empty');empty.append(el('h3','','Стол свободен для новых проектов.'),el('p','','Пока собираем идеи и задачи. Расскажи, какая вещь тебе нужна, или предложи свой проект.'));const b=el('button','button','Предложить задачу ↗');b.onclick=()=>openForm('idea');empty.append(b);cards.append(empty);}else if(!rows.length)cards.append(el('p','empty','Ничего не нашли. Попробуй другой запрос или предложи свою задачу.'));}
-async function load(){try{const r=await fetch('/workshop/api/projects');if(!r.ok)throw Error();projects=await r.json();render();}catch(e){const p=el('p','empty','Не удалось загрузить каталог. '),b=el('button','retry','Попробовать ещё раз');b.onclick=load;p.append(b);cards.replaceChildren(p);}}
-for(const b of document.querySelectorAll('[data-filter]'))b.onclick=()=>{filter=b.dataset.filter;for(const x of document.querySelectorAll('[data-filter]')){x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b));}render();};$('#search').addEventListener('input',render);
-function openForm(kind,p){form.reset();form.hidden=false;$('#success').hidden=true;$('#form-error').textContent='';form.elements.kind.value=kind;form.elements.project_id.value=p?.id||'';const isProject=kind==='project',revive=kind==='revive';$('#dialog-title').textContent=revive?(p.status==='development'?'Попробовать '+p.title:'Вернуть '+p.title):isProject?'Положить проект на стол':'Какой вещи не хватает?';$('#dialog-intro').textContent=revive?(p.status==='development'?'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.':'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.'):isProject?'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.':'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.';$('#title-field').hidden=revive;form.elements.title.required=!revive;$('#author-field').hidden=!isProject;form.elements.author.required=isProject;$('#url-field').hidden=!isProject;form.elements.description.placeholder=isProject?'Что делает проект, кому нужен и работает ли сейчас?':'Что нужно сделать и в какой ситуации это пригодится?';modal.showModal();}
-for(const b of document.querySelectorAll('[data-kind]'))b.onclick=()=>openForm(b.dataset.kind);for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();$('#privacy-open').onclick=()=>$('#privacy-dialog').showModal();for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});
-form.addEventListener('submit',async e=>{e.preventDefault();const b=form.querySelector('[type=submit]');b.disabled=true;b.textContent='Сохраняем…';$('#form-error').textContent='';const data=Object.fromEntries(new FormData(form));data.consent=form.elements.consent.checked;try{const r=await fetch('/workshop/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const res=await r.json();if(!r.ok)throw Error(res.error||'Не удалось сохранить заявку. Попробуй ещё раз.');form.hidden=true;$('#success').hidden=false;$('#success-text').textContent=res.duplicate?'Твой запрос на этот проект уже есть в списке. Повторно отправлять его не нужно.':'Заявка сохранена. Команда мастерской посмотрит её и сможет связаться с тобой.';}catch(err){$('#form-error').textContent=err.message||'Нет связи с сервером. Текст заявки остаётся в форме.';}finally{b.disabled=false;b.textContent='Отправить заявку ↗';}});load();
+const english = document.documentElement.lang === 'en';
+const copy = {
+  'В разработке': 'In development', 'В архиве': 'Archived', 'Страница доступна': 'Available',
+  'Хочу попробовать': 'Try it', 'Посмотреть': 'Explore', 'Мне это нужно': 'I need this',
+  'Стол свободен для новых проектов.': 'The table is ready for new projects.',
+  'Пока собираем идеи и задачи. Расскажи, какая вещь тебе нужна, или предложи свой проект.': 'We are gathering ideas. Tell us what you need, or share a project of your own.',
+  'Предложить задачу ↗': 'Suggest an idea ↗',
+  'Ничего не нашли. Попробуй другой запрос или предложи свою задачу.': 'Nothing found. Try another search or suggest an idea.',
+  'Не удалось загрузить каталог. ': 'Could not load the catalogue. ', 'Попробовать ещё раз': 'Try again',
+  'Попробовать ': 'Try ', 'Вернуть ': 'Bring back ', 'Положить проект на стол': 'Add your project',
+  'Какой вещи не хватает?': 'What do you wish existed?',
+  'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.': 'This project is still in development. Tell us what you would like to try, and we will save your interest in testing.',
+  'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.': 'Tell us how you would use this project. We will save your request, but cannot promise a release date.',
+  'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.': 'Working, unfinished, or already stopped: tell us why it could be useful.',
+  'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.': 'Describe a real situation. We will first see whether something suitable already exists.',
+  'Что делает проект, кому нужен и работает ли сейчас?': 'What does it do, who needs it, and does it work now?',
+  'Что нужно сделать и в какой ситуации это пригодится?': 'What should it do, and when would someone need it?',
+  'Сохраняем…': 'Saving…', 'Отправить заявку ↗': 'Send submission ↗',
+  'Не удалось сохранить заявку. Попробуй ещё раз.': 'Could not save your submission. Please try again.',
+  'Твой запрос на этот проект уже есть в списке. Повторно отправлять его не нужно.': 'We already have your request for this project. No need to send it again.',
+  'Заявка сохранена. Команда мастерской посмотрит её и сможет связаться с тобой.': 'Your submission is saved. The workshop team will review it and may contact you.',
+  'Нет связи с сервером. Текст заявки остаётся в форме.': 'Cannot reach the server. Your text is still in the form.',
+  'Отправьте заявку через форму на сайте.': 'Please use the form on this site.',
+  'Заявка слишком большая.': 'Your submission is too large.',
+  'Неверный формат.': 'Invalid submission format.',
+  'Не удалось отправить форму.': 'Could not send the form.',
+  'Проект не найден.': 'Project not found.',
+  'Проверьте обязательные поля и длину описания.': 'Check the required fields and description length.',
+  'Укажите email, Telegram @username или ссылку на профиль LinkedIn.': 'Enter an email, Telegram @username, or LinkedIn profile URL.',
+  'Ссылка должна начинаться с https:// или http://.': 'The link must start with https:// or http://.',
+  'Нужно согласие на обработку заявки.': 'Please agree to have your submission stored.',
+  'Слишком много заявок. Попробуйте через час.': 'Too many submissions. Please try again in an hour.'
+};
+const tr = value => english ? (copy[value] || value) : value;
+const $ = selector => document.querySelector(selector);
+const cards = $('#cards'), modal = $('#submit-dialog'), form = $('#submission');
+let projects = [], filter = 'all';
+function el(tag, cls, value) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (value !== undefined) node.textContent = value;
+  return node;
+}
+function render() {
+  cards.replaceChildren();
+  const q = $('#search').value.trim().toLocaleLowerCase(english ? 'en' : 'ru');
+  const rows = projects.filter(p => (filter === 'all' || p.status === filter) &&
+    [p.title, p.description, p.category, p.author].join(' ').toLocaleLowerCase(english ? 'en' : 'ru').includes(q));
+  $('#count').textContent = projects.length;
+  $('.filters').hidden = !projects.length;
+  $('.search').hidden = !projects.length;
+  for (const p of rows) {
+    const card = el('article', 'card');
+    const kind = p.id === 'pinock-space' ? 'space' : p.id === 'logo-maker' ? 'logo' : p.id === 'yukaresearch' ? 'research' : 'generic';
+    const art = el('div', 'card-art ' + kind);
+    art.setAttribute('aria-hidden', 'true');
+    art.append(el('span', 'art-label', p.category), el('strong', '', kind === 'space' ? 'space /' : kind === 'logo' ? 'Aa → Logo' : kind === 'research' ? 'Research.' : p.title), el('span', 'art-number', String(projects.indexOf(p) + 1).padStart(2, '0')));
+    const body = el('div', 'card-body'), meta = el('div', 'card-meta');
+    meta.append(el('span', '', p.category), el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : 'Страница доступна')));
+    body.append(meta, el('h3', '', p.title), el('p', '', p.description));
+    const bottom = el('div', 'card-bottom'); bottom.append(el('span', 'author', p.author));
+    if (p.status === 'live' && /^https?:\/\//.test(p.url)) {
+      const link = el('a', 'card-action', tr(p.id === 'actor-replacement-studio' ? 'Хочу попробовать' : 'Посмотреть'));
+      link.href = p.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.append(el('span', '', '↗')); bottom.append(link);
+    } else {
+      const button = el('button', 'card-action', tr(p.status === 'development' ? 'Хочу попробовать' : 'Мне это нужно'));
+      button.type = 'button'; button.append(el('span', '', '↗')); button.onclick = () => openForm('revive', p); bottom.append(button);
+    }
+    body.append(bottom); card.append(art, body); cards.append(card);
+  }
+  if (!projects.length) {
+    const empty = el('div', 'empty');
+    empty.append(el('h3', '', tr('Стол свободен для новых проектов.')), el('p', '', tr('Пока собираем идеи и задачи. Расскажи, какая вещь тебе нужна, или предложи свой проект.')));
+    const button = el('button', 'button', tr('Предложить задачу ↗')); button.onclick = () => openForm('idea'); empty.append(button); cards.append(empty);
+  } else if (!rows.length) cards.append(el('p', 'empty', tr('Ничего не нашли. Попробуй другой запрос или предложи свою задачу.')));
+}
+async function load() {
+  try {
+    const response = await fetch(english ? '/en/api/projects' : '/workshop/api/projects');
+    if (!response.ok) throw Error();
+    projects = await response.json(); render();
+  } catch {
+    const message = el('p', 'empty', tr('Не удалось загрузить каталог. '));
+    const retry = el('button', 'retry', tr('Попробовать ещё раз')); retry.onclick = load; message.append(retry); cards.replaceChildren(message);
+  }
+}
+for (const button of document.querySelectorAll('[data-filter]')) button.onclick = () => {
+  filter = button.dataset.filter;
+  for (const item of document.querySelectorAll('[data-filter]')) {
+    item.classList.toggle('selected', item === button); item.setAttribute('aria-pressed', String(item === button));
+  }
+  render();
+};
+$('#search').addEventListener('input', render);
+function openForm(kind, project) {
+  form.reset(); form.hidden = false; $('#success').hidden = true; $('#form-error').textContent = '';
+  form.elements.kind.value = kind; form.elements.project_id.value = project?.id || '';
+  const isProject = kind === 'project', revive = kind === 'revive';
+  $('#dialog-title').textContent = revive ? tr(project.status === 'development' ? 'Попробовать ' : 'Вернуть ') + project.title : tr(isProject ? 'Положить проект на стол' : 'Какой вещи не хватает?');
+  $('#dialog-intro').textContent = tr(revive ? (project.status === 'development' ? 'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.' : 'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.') : isProject ? 'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.' : 'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.');
+  $('#title-field').hidden = revive; form.elements.title.required = !revive;
+  $('#author-field').hidden = !isProject; form.elements.author.required = isProject;
+  $('#url-field').hidden = !isProject;
+  form.elements.description.placeholder = tr(isProject ? 'Что делает проект, кому нужен и работает ли сейчас?' : 'Что нужно сделать и в какой ситуации это пригодится?');
+  modal.showModal();
+}
+for (const button of document.querySelectorAll('[data-kind]')) button.onclick = () => openForm(button.dataset.kind);
+for (const button of document.querySelectorAll('[data-close]')) button.onclick = () => button.closest('dialog').close();
+$('#privacy-open').onclick = () => $('#privacy-dialog').showModal();
+for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('click', event => {
+  if (event.target === dialog) {
+    const rect = dialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+  }
+});
+form.addEventListener('submit', async event => {
+  event.preventDefault(); const button = form.querySelector('[type=submit]');
+  button.disabled = true; button.textContent = tr('Сохраняем…'); $('#form-error').textContent = '';
+  const data = Object.fromEntries(new FormData(form)); data.consent = form.elements.consent.checked;
+  try {
+    const response = await fetch('/workshop/api/submissions', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    const result = await response.json();
+    if (!response.ok) throw Error(tr(result.error || 'Не удалось сохранить заявку. Попробуй ещё раз.'));
+    form.hidden = true; $('#success').hidden = false;
+    $('#success-text').textContent = tr(result.duplicate ? 'Твой запрос на этот проект уже есть в списке. Повторно отправлять его не нужно.' : 'Заявка сохранена. Команда мастерской посмотрит её и сможет связаться с тобой.');
+  } catch (error) {
+    $('#form-error').textContent = error.message || tr('Нет связи с сервером. Текст заявки остаётся в форме.');
+  } finally {button.disabled = false; button.textContent = tr('Отправить заявку ↗');}
+});
+load();

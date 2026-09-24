@@ -24,6 +24,7 @@ class API(unittest.TestCase):
   with server.connect() as d:self.assertEqual(d.execute('SELECT count(*) FROM submissions').fetchone()[0],before+3)
   status,rows=self.req(path='/workshop/api/projects');self.assertEqual(status,200);self.assertEqual(len(rows),3);self.assertNotIn('example.com',json.dumps(rows));self.assertNotIn('contact',json.dumps(rows))
   self.assertEqual(self.req(path='/workshop/data/workshop.sqlite3')[0],404)
+  status,english=self.req(path='/en/api/projects');self.assertEqual(status,200);logo=next(x for x in english if x['id']=='logo-maker');self.assertEqual(logo['category'],'Graphic content');self.assertNotIn('Генератор',logo['description'])
  def test_bad_inputs_and_origin(self):
   data={'kind':'idea','title':'Test','description':'Test description','contact':'x@example.com','consent':True}
   self.assertEqual(self.req(data,origin='https://evil.example')[0],403)

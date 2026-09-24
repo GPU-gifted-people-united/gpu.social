@@ -1,6 +1,6 @@
 # GPU Workshop
 
-Live: https://gpu.social/workshop/
+Live: https://gpu.social/ (Russian), https://gpu.social/en/ (English).
 
 Python standard library + SQLite. No build or runtime packages needed.
 
@@ -12,5 +12,7 @@ Data defaults to `data/workshop.sqlite3`; set GPU_DB in production.
 Contacts are never part of the public project schema. Source bundles must exclude data/.
 
 Deployment: code in /opt/gpu-workshop/current, dedicated systemd DynamicUser service,
-persistent StateDirectory /var/lib/gpu-workshop, Caddy route /workshop/* only.
+persistent StateDirectory /var/lib/gpu-workshop, Caddy routes /, /en/*, and /workshop/*.
+Keep projects.json in every release; the service reads it at startup.
+English project descriptions live in EN_PROJECTS in server.py. Add a translation there when publishing a new project.
 User-facing operations and launch notes are in outputs/GPU-WORKSHOP.md in the owning workspace.
