@@ -8,6 +8,7 @@ ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
 EN_PROJECTS={
+ 'price-monitor':('B2B','A price monitoring system deployed for a regional liquor store chain. It collects prices from four competitors, compares the price index, supports price approval by the commercial team, and checks updated prices against 1C data.'),
  'pinock-space':('Graphic content','An AI art gallery that automatically creates cosmic images. Explore, download, and edit them.'),
  'aiconic-space':('Written content','A stream of AI articles about tools and automation, with links to sources.'),
  'actor-replacement-studio':('Video and voice','A web studio for replacing a character and voice in a video. Try the public version.'),
@@ -58,6 +59,7 @@ class Handler(BaseHTTPRequestHandler):
     for row in rows:
      category,description=EN_PROJECTS.get(row['id'],(row['category'],row['description']))
      row['category'],row['description']=category,description
+     if row['id']=='price-monitor':row['title'],row['author']='Price Monitor','Andrey'
    return self.send(200,rows)
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
   routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/favicon.svg':'favicon.svg'}
@@ -77,13 +79,13 @@ class Handler(BaseHTTPRequestHandler):
    if not isinstance(obj,dict):raise ValueError()
    if obj.get('website'):return self.send(400,{'error':'Не удалось отправить форму.'})
    vals={k:str(obj.get(k,'')).strip() for k in ['kind','project_id','title','description','contact','url','author']}
-   if vals['kind'] not in ('idea','project','revive'):raise ValueError()
+   if vals['kind'] not in ('idea','project','revive','contact'):raise ValueError()
    if not 10<=len(vals['description'])<=3000 or not 3<=len(vals['contact'])<=180:raise ValueError()
    if not (re.fullmatch(r'@[A-Za-z0-9_]{5,32}',vals['contact']) or re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',vals['contact']) or valid_linkedin(vals['contact'])):
     return self.send(400,{'error':'Укажите email, Telegram @username или ссылку на профиль LinkedIn.'})
    if len(vals['title'])>120 or len(vals['author'])>100 or len(vals['url'])>1000:raise ValueError()
    if vals['url'] and not valid_url(vals['url']):return self.send(400,{'error':'Ссылка должна начинаться с https:// или http://.'})
-   if vals['kind']!='revive' and len(vals['title'])<3:raise ValueError()
+   if vals['kind'] not in ('revive','contact') and len(vals['title'])<3:raise ValueError()
    if vals['kind']=='project' and len(vals['author'])<2:raise ValueError()
    if obj.get('consent') is not True:return self.send(400,{'error':'Нужно согласие на обработку заявки.'})
   except (ValueError,TypeError,json.JSONDecodeError):return self.send(400,{'error':'Проверьте обязательные поля и длину описания.'})
@@ -94,7 +96,7 @@ class Handler(BaseHTTPRequestHandler):
   with connect() as d:
    d.execute('BEGIN IMMEDIATE'); d.execute('DELETE FROM limits WHERE created<?',(now-3600,))
    if d.execute('SELECT count(*) FROM limits WHERE ip=?',(ip,)).fetchone()[0]>=8:return self.send(429,{'error':'Слишком много заявок. Попробуйте через час.'})
-   if vals['kind']=='revive':
+   if vals['kind'] in ('revive','contact'):
     project=d.execute("SELECT title FROM projects WHERE id=? AND status IN ('live','archived','development')",(vals['project_id'],)).fetchone()
     if not project:return self.send(400,{'error':'Проект не найден.'})
     vals['title']=project['title']; h=hashlib.sha256(vals['contact'].lower().encode()).hexdigest()

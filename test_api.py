@@ -18,10 +18,10 @@ class API(unittest.TestCase):
   except urllib.error.HTTPError as e:return e.code,json.loads(e.read())
  def test_forms_persist_and_stay_private(self):
   with server.connect() as d: before=d.execute('SELECT count(*) FROM submissions').fetchone()[0]
-  for kind in ['project','idea','revive']:
+  for kind in ['project','idea','revive','contact']:
    status,obj=self.req({'kind':kind,'project_id':'logo-maker','title':'Test project','description':'This is a test submission with a useful description.','contact':kind+'@example.com','author':'Test','url':'https://example.com','consent':True})
    self.assertEqual(status,201)
-  with server.connect() as d:self.assertEqual(d.execute('SELECT count(*) FROM submissions').fetchone()[0],before+3)
+  with server.connect() as d:self.assertEqual(d.execute('SELECT count(*) FROM submissions').fetchone()[0],before+4)
   status,rows=self.req(path='/workshop/api/projects');self.assertEqual(status,200);self.assertEqual(len(rows),3);self.assertNotIn('example.com',json.dumps(rows));self.assertNotIn('contact',json.dumps(rows))
   self.assertEqual(self.req(path='/workshop/data/workshop.sqlite3')[0],404)
   status,english=self.req(path='/en/api/projects');self.assertEqual(status,200);logo=next(x for x in english if x['id']=='logo-maker');self.assertEqual(logo['category'],'Graphic content');self.assertNotIn('Генератор',logo['description'])
@@ -34,6 +34,7 @@ class API(unittest.TestCase):
   self.assertEqual(self.req({**data,'contact':'https://evil.example/in/test-person/'})[0],400)
   self.assertEqual(self.req({**data,'url':'javascript:alert(1)'})[0],400)
   self.assertEqual(self.req({**data,'kind':'revive','project_id':'missing'})[0],400)
+  self.assertEqual(self.req({**data,'kind':'contact','project_id':'missing'})[0],400)
  def test_deduplication(self):
   data={'kind':'revive','project_id':'logo-maker','description':'Would use it for my project','contact':'duplicate@example.com','consent':True}
   self.assertEqual(self.req(data)[0],201);status,obj=self.req(data);self.assertEqual(status,200);self.assertTrue(obj['duplicate'])

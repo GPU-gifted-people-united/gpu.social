@@ -1,6 +1,10 @@
 'use strict';
 const english = document.documentElement.lang === 'en';
 const copy = {
+  'Связаться с разработчиками': 'Contact the developers',
+  'Внедрён': 'Deployed',
+  'Расскажи, что нужно твоему бизнесу. Команда мастерской рассмотрит запрос и поможет связаться с разработчиками.': 'Tell us what your business needs. The workshop team will review your request and help you connect with the developers.',
+  'Какая задача у вашего бизнеса и что хотите обсудить с разработчиками?': 'What does your business need, and what would you like to discuss with the developers?',
   'В разработке': 'In development', 'В архиве': 'Archived', 'Страница доступна': 'Available',
   'Хочу попробовать': 'Try it', 'Посмотреть': 'Explore', 'Мне это нужно': 'I need this',
   'Стол свободен для новых проектов.': 'The table is ready for new projects.',
@@ -44,6 +48,7 @@ function el(tag, cls, value) {
 }
 function render() {
   cards.replaceChildren();
+  const b2bCards = $('#b2b-cards'); b2bCards.replaceChildren();
   const q = $('#search').value.trim().toLocaleLowerCase(english ? 'en' : 'ru');
   const rows = projects.filter(p => (filter === 'all' || (filter === 'b2b' ? p.category === 'B2B' : p.status === filter)) &&
     [p.title, p.description, p.category, p.author].join(' ').toLocaleLowerCase(english ? 'en' : 'ru').includes(q));
@@ -51,6 +56,7 @@ function render() {
   $('.filters').hidden = !projects.length;
   document.querySelector('[data-filter="b2b"]').hidden = !projects.some(p => p.category === 'B2B');
   $('.search').hidden = !projects.length;
+  $('#b2b').hidden = !rows.some(p => p.category === 'B2B');
   for (const p of rows) {
     const card = el('article', 'card');
     const kind = p.id === 'pinock-space' ? 'space' : p.id === 'logo-maker' ? 'logo' : p.id === 'yukaresearch' ? 'research' : 'generic';
@@ -58,10 +64,13 @@ function render() {
     art.setAttribute('aria-hidden', 'true');
     art.append(el('span', 'art-label', p.category), el('strong', '', kind === 'space' ? 'space /' : kind === 'logo' ? 'Aa → Logo' : kind === 'research' ? 'Research.' : p.title), el('span', 'art-number', String(projects.indexOf(p) + 1).padStart(2, '0')));
     const body = el('div', 'card-body'), meta = el('div', 'card-meta');
-    meta.append(el('span', '', p.category), el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : 'Страница доступна')));
+    meta.append(el('span', '', p.category), el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(p.category === 'B2B' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : 'Страница доступна')));
     body.append(meta, el('h3', '', p.title), el('p', '', p.description));
     const bottom = el('div', 'card-bottom'); bottom.append(el('span', 'author', p.author));
-    if (p.status === 'live' && /^https?:\/\//.test(p.url)) {
+    if (p.category === 'B2B') {
+      const button = el('button', 'card-action', tr('Связаться с разработчиками'));
+      button.type = 'button'; button.append(el('span', '', '↗')); button.onclick = () => openForm('contact', p); bottom.append(button);
+    } else if (p.status === 'live' && /^https?:\/\//.test(p.url)) {
       const link = el('a', 'card-action', tr(p.id === 'actor-replacement-studio' ? 'Хочу попробовать' : 'Посмотреть'));
       link.href = p.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
       link.append(el('span', '', '↗')); bottom.append(link);
@@ -69,7 +78,7 @@ function render() {
       const button = el('button', 'card-action', tr(p.status === 'development' ? 'Хочу попробовать' : 'Мне это нужно'));
       button.type = 'button'; button.append(el('span', '', '↗')); button.onclick = () => openForm('revive', p); bottom.append(button);
     }
-    body.append(bottom); card.append(art, body); cards.append(card);
+    body.append(bottom); card.append(art, body); (p.category === 'B2B' ? b2bCards : cards).append(card);
   }
   if (!projects.length) {
     const empty = el('div', 'empty');
@@ -82,6 +91,7 @@ async function load() {
     const response = await fetch(english ? '/en/api/projects' : '/workshop/api/projects');
     if (!response.ok) throw Error();
     projects = await response.json(); render();
+    if (location.hash === '#b2b' && !$('#b2b').hidden) $('#b2b').scrollIntoView();
   } catch {
     const message = el('p', 'empty', tr('Не удалось загрузить каталог. '));
     const retry = el('button', 'retry', tr('Попробовать ещё раз')); retry.onclick = load; message.append(retry); cards.replaceChildren(message);
@@ -98,13 +108,13 @@ $('#search').addEventListener('input', render);
 function openForm(kind, project) {
   form.reset(); form.hidden = false; $('#success').hidden = true; $('#form-error').textContent = '';
   form.elements.kind.value = kind; form.elements.project_id.value = project?.id || '';
-  const isProject = kind === 'project', revive = kind === 'revive';
-  $('#dialog-title').textContent = revive ? tr(project.status === 'development' ? 'Попробовать ' : 'Вернуть ') + project.title : tr(isProject ? 'Положить проект на стол' : 'Какой вещи не хватает?');
-  $('#dialog-intro').textContent = tr(revive ? (project.status === 'development' ? 'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.' : 'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.') : isProject ? 'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.' : 'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.');
-  $('#title-field').hidden = revive; form.elements.title.required = !revive;
+  const isProject = kind === 'project', revive = kind === 'revive', contact = kind === 'contact', linked = revive || contact;
+  $('#dialog-title').textContent = contact ? tr('Связаться с разработчиками') + ' — ' + project.title : revive ? tr(project.status === 'development' ? 'Попробовать ' : 'Вернуть ') + project.title : tr(isProject ? 'Положить проект на стол' : 'Какой вещи не хватает?');
+  $('#dialog-intro').textContent = tr(contact ? 'Расскажи, что нужно твоему бизнесу. Команда мастерской рассмотрит запрос и поможет связаться с разработчиками.' : revive ? (project.status === 'development' ? 'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.' : 'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.') : isProject ? 'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.' : 'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.');
+  $('#title-field').hidden = linked; form.elements.title.required = !linked;
   $('#author-field').hidden = !isProject; form.elements.author.required = isProject;
   $('#url-field').hidden = !isProject;
-  form.elements.description.placeholder = tr(isProject ? 'Что делает проект, кому нужен и работает ли сейчас?' : 'Что нужно сделать и в какой ситуации это пригодится?');
+  form.elements.description.placeholder = tr(contact ? 'Какая задача у вашего бизнеса и что хотите обсудить с разработчиками?' : isProject ? 'Что делает проект, кому нужен и работает ли сейчас?' : 'Что нужно сделать и в какой ситуации это пригодится?');
   modal.showModal();
 }
 for (const button of document.querySelectorAll('[data-kind]')) button.onclick = () => openForm(button.dataset.kind);
