@@ -45,10 +45,11 @@ function el(tag, cls, value) {
 function render() {
   cards.replaceChildren();
   const q = $('#search').value.trim().toLocaleLowerCase(english ? 'en' : 'ru');
-  const rows = projects.filter(p => (filter === 'all' || p.status === filter) &&
+  const rows = projects.filter(p => (filter === 'all' || (filter === 'b2b' ? p.category === 'B2B' : p.status === filter)) &&
     [p.title, p.description, p.category, p.author].join(' ').toLocaleLowerCase(english ? 'en' : 'ru').includes(q));
   $('#count').textContent = projects.length;
   $('.filters').hidden = !projects.length;
+  document.querySelector('[data-filter="b2b"]').hidden = !projects.some(p => p.category === 'B2B');
   $('.search').hidden = !projects.length;
   for (const p of rows) {
     const card = el('article', 'card');
