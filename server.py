@@ -49,7 +49,7 @@ class Handler(BaseHTTPRequestHandler):
   self.send_response(status); self.send_header('Content-Type',kind); self.send_header('Content-Length',str(len(data)))
   self.send_header('Cache-Control','no-store' if 'json' in kind else 'no-cache')
   self.send_header('X-Content-Type-Options','nosniff'); self.send_header('Referrer-Policy','strict-origin-when-cross-origin')
-  self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+  self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: https://www.google-analytics.com https://region1.google-analytics.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
   self.end_headers(); self.wfile.write(data)
  def do_GET(self):
   path=urlparse(self.path).path
@@ -62,7 +62,7 @@ class Handler(BaseHTTPRequestHandler):
      if row['id']=='price-monitor':row['title'],row['author']='Price Monitor','Andrey'
    return self.send(200,rows)
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
-  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/favicon.svg':'favicon.svg'}
+  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg'}
   f=routes.get(path)
   if not f:return self.send(404,{'error':'Страница не найдена'})
   types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml'}
