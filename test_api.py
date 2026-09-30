@@ -29,10 +29,10 @@ class API(unittest.TestCase):
   for path in ('/','/en/'):
    with urllib.request.urlopen(self.base+path) as response:
     html=response.read().decode();policy=response.headers['Content-Security-Policy']
-   self.assertIn('G-5QYC5M3TD3',html)
+   self.assertIn('G-1DPNCQB9NC',html)
    self.assertIn('www.googletagmanager.com',policy)
   with urllib.request.urlopen(self.base+'/workshop/analytics.js') as response:
-   self.assertIn("gtag('config', 'G-5QYC5M3TD3')",response.read().decode())
+   self.assertIn("gtag('config', 'G-1DPNCQB9NC')",response.read().decode())
  def test_bad_inputs_and_origin(self):
   data={'kind':'idea','title':'Test','description':'Test description','contact':'x@example.com','consent':True}
   self.assertEqual(self.req(data,origin='https://evil.example')[0],403)
