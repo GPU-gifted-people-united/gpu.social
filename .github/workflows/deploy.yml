@@ -1,0 +1,33 @@
+name: Deploy
+on:
+  workflow_run:
+    workflows: [Checks]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Package reviewed release
+        run: tar -czf /tmp/gpu-release.tar.gz server.py manage.py projects.json public README.md CONTRIBUTING.md updates.json
+      - name: Deploy with restricted key
+        env:
+          DEPLOY_KEY: ${{ secrets.GPU_DEPLOY_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.GPU_DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.GPU_DEPLOY_HOST }}
+          DEPLOY_COMMIT: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          umask 077
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/gpu_deploy"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          ssh -i "$HOME/.ssh/gpu_deploy" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "root@$DEPLOY_HOST" "deploy $DEPLOY_COMMIT" < /tmp/gpu-release.tar.gz

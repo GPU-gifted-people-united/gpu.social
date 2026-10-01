@@ -16,3 +16,11 @@ persistent StateDirectory /var/lib/gpu-workshop, Caddy routes /, /en/*, and /wor
 Keep projects.json in every release; the service reads it at startup.
 English project descriptions live in EN_PROJECTS in server.py. Add a translation there when publishing a new project.
 User-facing operations and launch notes are in outputs/GPU-WORKSHOP.md in the owning workspace.
+
+## Expedition UI
+
+Explore / Create / Participate, with a separate PEOPLE page at /workshop/people/ (RU) and /en/people/ (EN). Public project detail pages are generated from the published catalogue, with sharing and bilingual metadata.
+
+Reviewed updates live in updates.json. Run `python3 scripts/build_feed.py` to rebuild /workshop/feed.json and /workshop/feed.xml. Feeds never read the private submissions table. PEOPLE profiles are added only after a contribution and consent.
+
+See CONTRIBUTING.md for a quick start and starter tasks.

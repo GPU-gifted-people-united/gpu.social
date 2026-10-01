@@ -3,7 +3,9 @@
 import argparse, hashlib, json, os, re, sqlite3, time, uuid
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
+from html import escape
+from contextlib import contextmanager
 ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
@@ -18,8 +20,12 @@ EN_PROJECTS={
  'logo-maker':('Graphic content','A logo concept generator from a brand description. The old page is unavailable; you can ask to bring it back.')
 }
 
+@contextmanager
 def connect():
- db=sqlite3.connect(DB,timeout=15); db.row_factory=sqlite3.Row; return db
+ db=sqlite3.connect(DB,timeout=15); db.row_factory=sqlite3.Row
+ try:
+  with db:yield db
+ finally:db.close()
 
 def init():
  DB.parent.mkdir(parents=True,exist_ok=True)
@@ -61,11 +67,39 @@ class Handler(BaseHTTPRequestHandler):
      row['category'],row['description']=category,description
      if row['id']=='price-monitor':row['title'],row['author']='Price Monitor','Andrey'
    return self.send(200,rows)
+  match=re.fullmatch(r'/(workshop|en)/projects/([^/]+)/?', path)
+  if match:
+   with connect() as d:
+    row=d.execute("SELECT * FROM projects WHERE id=? AND status IN ('live','archived','development')", (unquote(match[2]),)).fetchone()
+   if not row:return self.send(404,{'error':'Проект не найден'})
+   p=dict(row); en=match[1]=='en'; home='/en/' if en else '/'
+   if en:
+    p['category'],p['description']=EN_PROJECTS.get(p['id'],(p['category'],p['description']))
+    if p['id']=='price-monitor':p['author']='Andrey'
+   page=(ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
+   title=escape(p['title']); description=escape(p['description']); category=escape(p['category']); author=escape(p['author'])
+   action=''
+   if p['category']=='B2B':
+    action=f'<button class="button" id="project-contact">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</button>'
+   elif p['status']=='live' and valid_url(p['url']):
+    action=f'<a class="button" href="{escape(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Try the project" if en else "Попробовать проект"} ↗</a>'
+   else:
+    action=f'<button class="button" id="project-contact">{"I want to try it" if en else "Хочу попробовать"} ↗</button>'
+   main=f'<main id="main" class="project-page" data-project-id="{escape(p["id"],quote=True)}" data-project-title="{title}" data-project-status="{escape(p["status"])}" data-project-category="{category}"><a class="text-button" href="{home}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="crew-invite"><div><h2>{"Our projects. Our shared adventure." if en else "Наши проекты. Общее приключение."}</h2><p>{"Share something useful. Bring your own project — we’ll spread the word together." if en else "Расскажи о полезном. А когда создашь своё — приноси, будем продвигать вместе."}</p><div class="actions"><button class="button" data-kind="project">{"Bring your project" if en else "Принести свой проект"} ＋</button><a class="text-button" href="{home}#participate">{"Participate" if en else "Участвовать"} ↗</a></div></div></section></main>'
+   page=re.sub(r'<main id="main">.*?</main>', lambda _:main, page, count=1, flags=re.S)
+   page=re.sub(r'<title>.*?</title>',lambda _:f'<title>{title} — GPU</title>',page,count=1)
+   for key,value in [('name="description"',description),('property="og:title"',title+' — GPU'),('property="og:description"',description)]:
+    page=re.sub(r'<meta '+key+r' content="[^"]*">',lambda _,k=key,v=value:f'<meta {k} content="{v}">',page,count=1)
+   lang_links=f'<span class="lang-switch"><a href="/workshop/projects/{escape(p["id"],quote=True)}/" lang="ru" {"" if en else "aria-current=page"}>RU</a><span>/</span><a href="/en/projects/{escape(p["id"],quote=True)}/" lang="en" {"aria-current=page" if en else ""}>EN</a></span>'
+   page=re.sub(r'<span class="lang-switch">.*?</span></header>',lambda _:lang_links+'</header>',page,count=1)
+   canonical='https://gpu.social'+path.rstrip('/')+'/' 
+   page=page.replace('</head>',f'<link rel="canonical" href="{escape(canonical,quote=True)}"><meta property="og:url" content="{escape(canonical,quote=True)}"></head>')
+   return self.send(200,page,'text/html; charset=utf-8')
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
-  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg'}
+  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}
   f=routes.get(path)
   if not f:return self.send(404,{'error':'Страница не найдена'})
-  types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml'}
+  types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml','json':'application/feed+json; charset=utf-8','xml':'application/rss+xml; charset=utf-8','png':'image/png'}
   return self.send(200,(ROOT/'public'/f).read_bytes(),types[f.rsplit('.',1)[1]])
  def do_POST(self):
   if urlparse(self.path).path!=BASE+'/api/submissions':return self.send(404,{'error':'Не найдено'})

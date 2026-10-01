@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 520" fill="none">
+<defs><radialGradient id="glow"><stop stop-color="#d8ae72" stop-opacity=".12"/><stop offset="1" stop-color="#d8ae72" stop-opacity="0"/></radialGradient></defs>
+<circle cx="306" cy="263" r="249" fill="url(#glow)"/>
+<g stroke="#b8aa86" stroke-opacity=".2"><circle cx="307" cy="252" r="211"/><circle cx="307" cy="252" r="176"/><ellipse cx="307" cy="252" rx="211" ry="83" transform="rotate(-32 307 252)"/><ellipse cx="307" cy="252" rx="211" ry="83" transform="rotate(32 307 252)"/><path d="M96 252H518M307 41V463M157 103L456 401M157 401L456 103"/><path d="M92 43H122M107 28V58M496 437H526M511 422V452"/></g>
+<g stroke="#a99771" stroke-opacity=".5"><circle cx="307" cy="252" r="233" stroke-dasharray="1 10"/><circle cx="307" cy="252" r="204" stroke-dasharray="1 12"/></g>
+<path d="M79 382C111 306 194 426 242 344S266 209 354 151S447 166 494 88" stroke="#e7b879" stroke-width="1.5" stroke-dasharray="5 8"/>
+<g fill="#e9c28c"><circle cx="79" cy="382" r="4"/><circle cx="354" cy="151" r="4"/><circle cx="494" cy="88" r="4"/></g>
+<g stroke="#dfb77d" stroke-width="1.3" transform="translate(307 252)"><circle r="68"/><circle r="57" stroke-opacity=".5"/><path d="M0-96V-74M0 74V96M-96 0H-74M74 0H96"/><path d="M0-71L12-12L71 0L12 12L0 71L-12 12L-71 0L-12-12Z" fill="#dfb77d" fill-opacity=".08"/><path d="M0-71L0 0L12-12ZM0 71L0 0L-12 12ZM-71 0L0 0L-12-12ZM71 0L0 0L12 12Z" fill="#dfb77d" fill-opacity=".65"/><circle r="5" fill="#dfb77d"/></g>
+<g fill="#eee3cb" font-family="Georgia,serif" font-size="15" text-anchor="middle"><text x="307" y="135">N</text><text x="307" y="381">S</text><text x="185" y="258">W</text><text x="431" y="258">E</text></g>
+<g transform="translate(107 365) rotate(-12)" stroke="#e9c28c" stroke-width="1.4"><path d="M-30 4H38L25 21H-17Z" fill="#182b35"/><path d="M5-54V7M-17-33V6M5-50L31-13H5ZM-17-30L-1-8H-17Z" fill="#e9c28c" fill-opacity=".25"/><path d="M5-54L19-48L5-44M-40 29Q-28 23-16 29T8 29T32 29T56 29"/></g>
+<g stroke="#799fbd" stroke-width="1.2" stroke-opacity=".7"><path d="M400 362L455 338L509 375L472 410L400 362"/><path d="M138 137L173 111L202 159L151 180L138 137"/></g>
+<g fill="#c9d9dd"><circle cx="400" cy="362" r="3"/><circle cx="455" cy="338" r="3"/><circle cx="509" cy="375" r="3"/><circle cx="472" cy="410" r="3"/><circle cx="138" cy="137" r="3"/><circle cx="173" cy="111" r="3"/><circle cx="202" cy="159" r="3"/><circle cx="151" cy="180" r="3"/><circle cx="55" cy="171" r="1.7"/><circle cx="537" cy="232" r="1.7"/><circle cx="195" cy="46" r="1.7"/><circle cx="393" cy="65" r="1.7"/><circle cx="366" cy="459" r="1.7"/></g>
+<g font-family="monospace" font-size="9" fill="#a79d88" letter-spacing="2"><text x="356" y="137">NEXT HORIZON</text><text x="54" y="421">TERRA INCOGNITA</text><text x="416" y="443">PER ASPERA</text><text x="31" y="73">00° / GPU</text></g>
+</svg>

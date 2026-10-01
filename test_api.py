@@ -33,6 +33,28 @@ class API(unittest.TestCase):
    self.assertIn('www.googletagmanager.com',policy)
   with urllib.request.urlopen(self.base+'/workshop/analytics.js') as response:
    self.assertIn("gtag('config', 'G-1DPNCQB9NC')",response.read().decode())
+ def test_public_pages_and_feeds(self):
+  from xml.etree import ElementTree
+  for path in ['/workshop/people/', '/en/people/']:
+   with urllib.request.urlopen(self.base+path) as response:
+    self.assertIn('PEOPLE',response.read().decode())
+  with urllib.request.urlopen(self.base+'/workshop/feed.xml') as response:
+   self.assertEqual(ElementTree.fromstring(response.read()).tag,'rss')
+  status,feed=self.req(path='/workshop/feed.json');self.assertEqual(status,200)
+  self.assertTrue(all(i['url'].startswith('https://gpu.social/') for i in feed['items']))
+  with server.connect() as d:
+   d.execute('INSERT INTO projects VALUES(?,?,?,?,?,?,?,?)',('unsafe-fixture','<script>alert(1)</script>','<b>Unsafe</b>','Test','hidden','','Test',0))
+  self.assertEqual(self.req(path='/workshop/projects/unsafe-fixture/')[0],404)
+  with server.connect() as d:d.execute("UPDATE projects SET status='live' WHERE id='unsafe-fixture'")
+  try:
+   with urllib.request.urlopen(self.base+'/workshop/projects/unsafe-fixture/') as response:
+    html=response.read().decode()
+    self.assertNotIn('<script>alert(1)</script>',html)
+    self.assertIn('&lt;script&gt;',html)
+   with urllib.request.urlopen(self.base+'/en/projects/logo-maker/') as response:
+    html=response.read().decode();self.assertIn('Graphic content',html);self.assertIn('share-project',html)
+  finally:
+   with server.connect() as d:d.execute("DELETE FROM projects WHERE id='unsafe-fixture'")
  def test_bad_inputs_and_origin(self):
   data={'kind':'idea','title':'Test','description':'Test description','contact':'x@example.com','consent':True}
   self.assertEqual(self.req(data,origin='https://evil.example')[0],403)
