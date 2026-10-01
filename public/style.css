@@ -8,3 +8,5 @@
 .lang-switch{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap}.lang-switch a{padding:3px 0;color:#7b8174}.lang-switch a[aria-current="page"]{color:#242822;border-bottom:2px solid #e84e28}.lang-switch a:hover{color:#cb4320}@media(max-width:650px){.top .lang-switch{order:2;margin-left:auto}.top nav>a.community-link{order:3}}
 
 .b2b-section{margin-top:42px;padding-top:30px;border-top:1px solid #d9dcd3}.b2b-intro{color:#656b60;margin:12px 0 24px}.b2b-section[hidden]{display:none}.filter[hidden]{display:none}
+
+.card-art{justify-content:center}.contribute h2{margin-bottom:16px}

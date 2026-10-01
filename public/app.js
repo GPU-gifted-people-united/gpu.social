@@ -5,14 +5,14 @@ const copy = {
   'Внедрён': 'Deployed',
   'Расскажи, что нужно твоему бизнесу. Команда мастерской рассмотрит запрос и поможет связаться с разработчиками.': 'Tell us what your business needs. The workshop team will review your request and help you connect with the developers.',
   'Какая задача у вашего бизнеса и что хотите обсудить с разработчиками?': 'What does your business need, and what would you like to discuss with the developers?',
-  'В разработке': 'In development', 'В архиве': 'Archived', 'Страница доступна': 'Available',
+  'В разработке': 'In development', 'В архиве': 'Archived', 
   'Хочу попробовать': 'Try it', 'Посмотреть': 'Explore', 'Мне это нужно': 'I need this',
-  'Стол свободен для новых проектов.': 'The table is ready for new projects.',
+  'В каталоге пока нет проектов.': 'There are no projects in the catalogue yet.',
   'Пока собираем идеи и задачи. Расскажи, какая вещь тебе нужна, или предложи свой проект.': 'We are gathering ideas. Tell us what you need, or share a project of your own.',
   'Предложить задачу ↗': 'Suggest an idea ↗',
   'Ничего не нашли. Попробуй другой запрос или предложи свою задачу.': 'Nothing found. Try another search or suggest an idea.',
   'Не удалось загрузить каталог. ': 'Could not load the catalogue. ', 'Попробовать ещё раз': 'Try again',
-  'Попробовать ': 'Try ', 'Вернуть ': 'Bring back ', 'Положить проект на стол': 'Add your project',
+  'Попробовать ': 'Try ', 'Вернуть ': 'Bring back ', 'Добавить свой проект': 'Add your project',
   'Какой вещи не хватает?': 'What do you wish existed?',
   'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.': 'This project is still in development. Tell us what you would like to try, and we will save your interest in testing.',
   'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.': 'Tell us how you would use this project. We will save your request, but cannot promise a release date.',
@@ -62,9 +62,11 @@ function render() {
     const kind = p.id === 'pinock-space' ? 'space' : p.id === 'logo-maker' ? 'logo' : p.id === 'yukaresearch' ? 'research' : 'generic';
     const art = el('div', 'card-art ' + kind);
     art.setAttribute('aria-hidden', 'true');
-    art.append(el('span', 'art-label', p.category), el('strong', '', kind === 'space' ? 'space /' : kind === 'logo' ? 'Aa → Logo' : kind === 'research' ? 'Research.' : p.title), el('span', 'art-number', String(projects.indexOf(p) + 1).padStart(2, '0')));
+    art.append(el('strong', '', kind === 'space' ? 'space /' : kind === 'logo' ? 'Aa → Logo' : kind === 'research' ? 'Research.' : p.title));
     const body = el('div', 'card-body'), meta = el('div', 'card-meta');
-    meta.append(el('span', '', p.category), el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(p.category === 'B2B' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : 'Страница доступна')));
+    meta.append(el('span', '', p.category));
+    const status = p.category === 'B2B' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : '';
+    if (status) meta.append(el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(status)));
     body.append(meta, el('h3', '', p.title), el('p', '', p.description));
     const bottom = el('div', 'card-bottom'); bottom.append(el('span', 'author', p.author));
     if (p.category === 'B2B') {
@@ -82,7 +84,7 @@ function render() {
   }
   if (!projects.length) {
     const empty = el('div', 'empty');
-    empty.append(el('h3', '', tr('Стол свободен для новых проектов.')), el('p', '', tr('Пока собираем идеи и задачи. Расскажи, какая вещь тебе нужна, или предложи свой проект.')));
+    empty.append(el('h3', '', tr('В каталоге пока нет проектов.')), el('p', '', tr('Пока собираем идеи и задачи. Расскажи, какая вещь тебе нужна, или предложи свой проект.')));
     const button = el('button', 'button', tr('Предложить задачу ↗')); button.onclick = () => openForm('idea'); empty.append(button); cards.append(empty);
   } else if (!rows.length) cards.append(el('p', 'empty', tr('Ничего не нашли. Попробуй другой запрос или предложи свою задачу.')));
 }
@@ -109,7 +111,7 @@ function openForm(kind, project) {
   form.reset(); form.hidden = false; $('#success').hidden = true; $('#form-error').textContent = '';
   form.elements.kind.value = kind; form.elements.project_id.value = project?.id || '';
   const isProject = kind === 'project', revive = kind === 'revive', contact = kind === 'contact', linked = revive || contact;
-  $('#dialog-title').textContent = contact ? tr('Связаться с разработчиками') + ' — ' + project.title : revive ? tr(project.status === 'development' ? 'Попробовать ' : 'Вернуть ') + project.title : tr(isProject ? 'Положить проект на стол' : 'Какой вещи не хватает?');
+  $('#dialog-title').textContent = contact ? tr('Связаться с разработчиками') + ' — ' + project.title : revive ? tr(project.status === 'development' ? 'Попробовать ' : 'Вернуть ') + project.title : tr(isProject ? 'Добавить свой проект' : 'Какой вещи не хватает?');
   $('#dialog-intro').textContent = tr(contact ? 'Расскажи, что нужно твоему бизнесу. Команда мастерской рассмотрит запрос и поможет связаться с разработчиками.' : revive ? (project.status === 'development' ? 'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.' : 'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.') : isProject ? 'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.' : 'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.');
   $('#title-field').hidden = linked; form.elements.title.required = !linked;
   $('#author-field').hidden = !isProject; form.elements.author.required = isProject;
