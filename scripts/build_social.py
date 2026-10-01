@@ -3,6 +3,7 @@
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import math
+from xml.etree import ElementTree
 ROOT=Path(__file__).resolve().parents[1]
 FONT=Path('/System/Library/Fonts/Supplemental')
 im=Image.new('RGB',(1200,630),'#0c1b25');d=ImageDraw.Draw(im)
@@ -17,7 +18,11 @@ for points in [[(880,165),(880,300),(896,284)],[(880,435),(880,300),(864,316)],[
 d.ellipse((872,292,888,308),fill='#d6ac76')
 line([(730,180),(780,140),(816,200),(750,230),(730,180)],'#82918c')
 for x,y in [(730,180),(780,140),(816,200),(750,230)]:d.ellipse((x-3,y-3,x+3,y+3),fill='#ccd4cc')
-d.text((70,55),'gpu',font=font('Arial Bold.ttf',56),fill='#f1eee5');d.text((190,63),'✳',font=font('Arial.ttf',36),fill='#d6ac76')
+d.text((70,55),'gpu',font=font('Arial Bold.ttf',56),fill='#f1eee5')
+svg=ElementTree.parse(ROOT/'public/favicon.svg').getroot()
+for rect in list(svg)[1]:
+ x,y,w,h=[float(rect.attrib[k]) for k in ['x','y','width','height']]
+ d.rectangle((195+x/2,66+y/2,195+(x+w)/2,66+(y+h)/2),fill='#c7e69c')
 d.text((70,165),'Explore.',font=font('Georgia.ttf',65),fill='#f1eee5')
 d.text((70,245),'Create.',font=font('Georgia.ttf',65),fill='#f1eee5')
 d.text((70,325),'Participate.',font=font('Georgia Italic.ttf',65),fill='#d6ac76')
