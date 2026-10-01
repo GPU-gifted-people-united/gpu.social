@@ -19,8 +19,10 @@ User-facing operations and launch notes are in outputs/GPU-WORKSHOP.md in the ow
 
 ## GPU UI
 
-Photographic surreal worlds and three clear action buttons: Explore / Create / Participate, with a separate PEOPLE page at /workshop/people/ (RU) and /en/people/ (EN). Public project detail pages are generated from the published catalogue, with sharing and bilingual metadata.
+Photographic surreal worlds and clear actions: Explore / Add a project / Join us / Community, with a separate PEOPLE page at /workshop/people/ (RU) and /en/people/ (EN). Public project detail pages are generated from the published catalogue, with sharing and bilingual metadata.
 
 Reviewed updates live in updates.json. Run `python3 scripts/build_feed.py` to rebuild /workshop/feed.json and /workshop/feed.xml. Feeds never read the private submissions table. PEOPLE profiles are added only after a contribution and consent.
 
 See CONTRIBUTING.md for a quick start and starter tasks.
+
+Project cards copy ready-to-share public text and a GPU project-page link. The Community section tells the origin story and offers a short assistant command; it is collapsed until opened.
