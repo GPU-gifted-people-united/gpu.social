@@ -19,7 +19,7 @@ User-facing operations and launch notes are in outputs/GPU-WORKSHOP.md in the ow
 
 ## GPU UI
 
-Photographic surreal worlds and three tactile keys: Explore / Create / Participate, with a separate PEOPLE page at /workshop/people/ (RU) and /en/people/ (EN). Public project detail pages are generated from the published catalogue, with sharing and bilingual metadata.
+Photographic surreal worlds and three clear action buttons: Explore / Create / Participate, with a separate PEOPLE page at /workshop/people/ (RU) and /en/people/ (EN). Public project detail pages are generated from the published catalogue, with sharing and bilingual metadata.
 
 Reviewed updates live in updates.json. Run `python3 scripts/build_feed.py` to rebuild /workshop/feed.json and /workshop/feed.xml. Feeds never read the private submissions table. PEOPLE profiles are added only after a contribution and consent.
 

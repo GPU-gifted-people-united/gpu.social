@@ -194,16 +194,12 @@ if ($('#project-contact')) $('#project-contact').onclick = () => {
   openForm($('#main').dataset.projectCategory === 'B2B' ? 'contact' : 'revive', project);
 };
 
-// Keep native links and form actions; give each physical key its own travel.
+// Update the world while preserving native links and form actions.
 const worldScene = $('#gpu-tactile-worlds');
 if (worldScene) {
   for (const key of worldScene.querySelectorAll('[data-world]')) {
     key.addEventListener('click', () => {
       worldScene.querySelectorAll('[data-scene]').forEach(image => image.classList.toggle('is-shown', image.dataset.scene === key.dataset.world));
-      key.classList.remove('is-touched');
-      void key.offsetWidth;
-      key.classList.add('is-touched');
     });
-    key.addEventListener('animationend', () => key.classList.remove('is-touched'));
   }
 }
