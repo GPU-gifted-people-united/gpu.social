@@ -26,3 +26,5 @@ Reviewed updates live in updates.json. Run `python3 scripts/build_feed.py` to re
 See CONTRIBUTING.md for a quick start and starter tasks.
 
 Project cards copy ready-to-share public text and a GPU project-page link. The Community section tells the origin story and offers a short assistant command; it is collapsed until opened.
+
+The Dot command authorises scoped daily support through accounts connected by each participant, with an optional review-first instruction. Add public social-post URLs to an update's `social_posts` list (or its summary) so Dot has exact posts to read; entries without social-post URLs are skipped. JSON retains the reviewed update fields. Never add private account data or instructions to the feed. Users control access and approvals in Dot. The owner reported testing the LinkedIn workflow; that is not a guarantee for every account or platform.
