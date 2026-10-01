@@ -62,7 +62,6 @@ function render() {
     const kind = p.category === 'B2B' ? 'business' : p.id === 'pinock-space' ? 'space' : p.id === 'aiconic-space' ? 'text' : p.id === 'actor-replacement-studio' ? 'video' : p.id === 'codex-limits' ? 'tools' : 'finance';
     const art = el('div', 'card-art ' + kind);
     art.setAttribute('aria-hidden', 'true');
-    art.append(el('strong', '', {space:'✧', text:'Aa', video:'▷', tools:'⌘', finance:'⇄', business:'⌁'}[kind]));
     const body = el('div', 'card-body'), meta = el('div', 'card-meta');
     meta.append(el('span', '', p.category));
     const status = p.category === 'B2B' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : '';
@@ -194,3 +193,17 @@ if ($('#project-contact')) $('#project-contact').onclick = () => {
   const project = {id: $('#main').dataset.projectId, title: $('#main').dataset.projectTitle, status: $('#main').dataset.projectStatus};
   openForm($('#main').dataset.projectCategory === 'B2B' ? 'contact' : 'revive', project);
 };
+
+// Keep native links and form actions; give each physical key its own travel.
+const worldScene = $('#gpu-tactile-worlds');
+if (worldScene) {
+  for (const key of worldScene.querySelectorAll('[data-world]')) {
+    key.addEventListener('click', () => {
+      worldScene.querySelectorAll('[data-scene]').forEach(image => image.classList.toggle('is-shown', image.dataset.scene === key.dataset.world));
+      key.classList.remove('is-touched');
+      void key.offsetWidth;
+      key.classList.add('is-touched');
+    });
+    key.addEventListener('animationend', () => key.classList.remove('is-touched'));
+  }
+}

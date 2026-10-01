@@ -96,10 +96,10 @@ class Handler(BaseHTTPRequestHandler):
    page=page.replace('</head>',f'<link rel="canonical" href="{escape(canonical,quote=True)}"><meta property="og:url" content="{escape(canonical,quote=True)}"></head>')
    return self.send(200,page,'text/html; charset=utf-8')
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
-  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}
+  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/window.jpg':'window.jpg',BASE+'/rainbow.jpg':'rainbow.jpg',BASE+'/road.jpg':'road.jpg',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}
   f=routes.get(path)
   if not f:return self.send(404,{'error':'Страница не найдена'})
-  types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml','json':'application/feed+json; charset=utf-8','xml':'application/rss+xml; charset=utf-8','png':'image/png'}
+  types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml','json':'application/feed+json; charset=utf-8','xml':'application/rss+xml; charset=utf-8','png':'image/png','jpg':'image/jpeg'}
   return self.send(200,(ROOT/'public'/f).read_bytes(),types[f.rsplit('.',1)[1]])
  def do_POST(self):
   if urlparse(self.path).path!=BASE+'/api/submissions':return self.send(404,{'error':'Не найдено'})
