@@ -92,7 +92,7 @@ class Handler(BaseHTTPRequestHandler):
     page=re.sub(r'<meta '+key+r' content="[^"]*">',lambda _,k=key,v=value:f'<meta {k} content="{v}">',page,count=1)
    lang_links=f'<span class="lang-switch"><a href="/workshop/projects/{escape(p["id"],quote=True)}/" lang="ru" {"" if en else "aria-current=page"}>RU</a><span>/</span><a href="/en/projects/{escape(p["id"],quote=True)}/" lang="en" {"aria-current=page" if en else ""}>EN</a></span>'
    page=re.sub(r'<span class="lang-switch">.*?</span></header>',lambda _:lang_links+'</header>',page,count=1)
-   canonical='https://gpu.social'+path.rstrip('/')+'/' 
+   canonical='https://gpu.social'+path.rstrip('/')+'/'
    page=page.replace('</head>',f'<link rel="canonical" href="{escape(canonical,quote=True)}"><meta property="og:url" content="{escape(canonical,quote=True)}"></head>')
    return self.send(200,page,'text/html; charset=utf-8')
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
