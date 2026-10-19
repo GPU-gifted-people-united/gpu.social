@@ -24,6 +24,15 @@ EN_PROJECTS={
  'logo-maker':('Graphic content','A logo concept generator from a brand description. The old page is unavailable; you can ask to bring it back.')
 }
 
+
+EN_TITLES={'nashday':'Our Day','price-monitor':'Price Monitor'}
+EN_AUTHORS={'nashday':'Ivan Shvedov','bayun':'Ivan Shvedov','shelter-12':'Vlad','price-monitor':'Andrey'}
+
+def localize_english_project(project):
+ project['category'],project['description']=EN_PROJECTS.get(project['id'],(project['category'],project['description']))
+ project['title']=EN_TITLES.get(project['id'],project['title'])
+ project['author']=EN_AUTHORS.get(project['id'],project['author'])
+
 @contextmanager
 def connect():
  db=sqlite3.connect(DB,timeout=15); db.row_factory=sqlite3.Row
@@ -66,10 +75,7 @@ class Handler(BaseHTTPRequestHandler):
   if path in (BASE+'/api/projects','/en/api/projects'):
    with connect() as d: rows=[dict(r) for r in d.execute("SELECT * FROM projects WHERE status IN ('live','archived','development') ORDER BY created,id")]
    if path.startswith('/en/'):
-    for row in rows:
-     category,description=EN_PROJECTS.get(row['id'],(row['category'],row['description']))
-     row['category'],row['description']=category,description
-     if row['id']=='price-monitor':row['title'],row['author']='Price Monitor','Andrey'
+    for row in rows:localize_english_project(row)
    return self.send(200,rows)
   match=re.fullmatch(r'/(workshop|en)/projects/([^/]+)/?', path)
   if match:
@@ -77,9 +83,7 @@ class Handler(BaseHTTPRequestHandler):
     row=d.execute("SELECT * FROM projects WHERE id=? AND status IN ('live','archived','development')", (unquote(match[2]),)).fetchone()
    if not row:return self.send(404,{'error':'Проект не найден'})
    p=dict(row); en=match[1]=='en'; home='/en/' if en else '/'
-   if en:
-    p['category'],p['description']=EN_PROJECTS.get(p['id'],(p['category'],p['description']))
-    if p['id']=='price-monitor':p['author']='Andrey'
+   if en:localize_english_project(p)
    page=(ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
    title=escape(p['title']); description=escape(p['description']); category=escape(p['category']); author=escape(p['author'])
    action=''

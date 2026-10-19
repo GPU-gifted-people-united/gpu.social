@@ -30,3 +30,5 @@ Project cards copy ready-to-share public text and a GPU project-page link. The C
 The Dot command authorises scoped daily support through accounts connected by each participant, with an optional review-first instruction. Add public social-post URLs to an update's `social_posts` list (or its summary) so Dot has exact posts to read; entries without social-post URLs are skipped. JSON retains the reviewed update fields. Never add private account data or instructions to the feed. Users control access and approvals in Dot. The owner reported testing the LinkedIn workflow; that is not a guarantee for every account or platform.
 
 GA4 records `dot_prompt_copy_click` for either Dot copy button, with language and placement only. This measures button presses, not successful clipboard writes or Dot activation. Browser-level analytics blocking may exclude some presses.
+
+English project titles and maker names are mapped in EN_TITLES and EN_AUTHORS in server.py. The catalogue API and detail pages use the same localisation so sharing and metadata match the visible title.
