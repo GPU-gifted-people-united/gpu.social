@@ -10,6 +10,10 @@ ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
 EN_PROJECTS={
+ 'nashday':('Events', 'Create a wedding invitation website and manage your guest list in one place.'),
+ 'bayun':('B2B', 'Conversation analytics for businesses: analyse calls and in-person customer conversations captured by audio badges to identify opportunities to improve sales and service.'),
+ 'grabster':('Learning', 'A macOS app that turns unfamiliar words from videos and other on-screen content into contextual flashcards. Hold ⌥Space, hover over a word, and release; review saved words with spaced repetition. Public beta.'),
+ 'shelter-12':('Games', 'A bunker party game for 4–12 people, each on their own phone: reveal character dossiers, debate, and vote. Exiled players keep playing from the basement. The link opens the iPhone version; the base game is free and has no ads.'),
  'price-monitor':('B2B','A price monitoring system deployed for a regional liquor store chain. It collects prices from four competitors, compares the price index, supports price approval by the commercial team, and checks updated prices against 1C data.'),
  'pinock-space':('Graphic content','An AI art gallery that automatically creates cosmic images. Explore, download, and edit them.'),
  'aiconic-space':('Written content','A stream of AI articles about tools and automation, with links to sources.'),

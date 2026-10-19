@@ -66,7 +66,7 @@ function render() {
     const card = el('article', 'card k-' + kind);
     const meta = el('div', 'card-meta');
     const tags = el('span', 'card-tags'); tags.append(el('span', 'chip', p.category)); meta.append(tags);
-    const status = p.category === 'B2B' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : '';
+    const status = p.id === 'price-monitor' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : '';
     if (status) tags.append(el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(status)));
     const title = el('h3', '');
     const detail = el('a', '', p.title); detail.href = (english ? '/en/projects/' : '/workshop/projects/') + encodeURIComponent(p.id) + '/';
