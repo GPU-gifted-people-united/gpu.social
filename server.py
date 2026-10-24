@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """GPU workshop: standard-library HTTP service + persistent SQLite."""
-import argparse, hashlib, json, os, re, sqlite3, time, uuid
+import argparse, hashlib, json, os, re, sqlite3, time, uuid, sys
+import public_pages, notifications
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
@@ -54,6 +55,8 @@ def init():
   for p in json.loads((ROOT/'projects.json').read_text()):
    d.execute('INSERT OR IGNORE INTO projects VALUES(?,?,?,?,?,?,?,?)',(p['id'],p['title'],p['description'],p['category'],p['status'],p['url'],p['author'],int(time.time())))
 
+ notifications.init(sys.modules[__name__])
+
 def valid_url(v):
  p=urlparse(v); return p.scheme in ('https','http') and bool(p.hostname) and not p.username and not p.password
 
@@ -74,39 +77,16 @@ class Handler(BaseHTTPRequestHandler):
   self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
   self.end_headers(); self.wfile.write(data)
  def do_GET(self):
-  path=urlparse(self.path).path
+  parsed=urlparse(self.path);path=parsed.path
+  if path in (BASE,BASE+'/'):
+   self.send_response(308);self.send_header('Location','/');self.send_header('Content-Length','0');self.end_headers();return
+  special=notifications.response(sys.modules[__name__],path,parsed.query) or public_pages.response(sys.modules[__name__],path)
+  if special:return self.send(*special)
   if path in (BASE+'/api/projects','/en/api/projects'):
    with connect() as d: rows=[dict(r) for r in d.execute("SELECT * FROM projects WHERE status IN ('live','archived','development') ORDER BY created,id")]
    if path.startswith('/en/'):
     for row in rows:localize_english_project(row)
    return self.send(200,rows)
-  match=re.fullmatch(r'/(workshop|en)/projects/([^/]+)/?', path)
-  if match:
-   with connect() as d:
-    row=d.execute("SELECT * FROM projects WHERE id=? AND status IN ('live','archived','development')", (unquote(match[2]),)).fetchone()
-   if not row:return self.send(404,{'error':'Проект не найден'})
-   p=dict(row); en=match[1]=='en'; home='/en/' if en else '/'
-   if en:localize_english_project(p)
-   page=(ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
-   title=escape(p['title']); description=escape(p['description']); category=escape(p['category']); author=escape(p['author'])
-   action=''
-   if p['status']=='live' and valid_url(p['url']):
-    label=('Visit website' if en else 'Перейти на сайт') if p['category']=='B2B' else ('Try the project' if en else 'Попробовать проект')
-    action=f'<a class="button" href="{escape(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{label} ↗</a>'
-   if p['category']=='B2B':
-    action+=f'<button class="button" id="project-contact">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</button>'
-   elif not action:
-    action=f'<button class="button" id="project-contact">{"I want to try it" if en else "Хочу попробовать"} ↗</button>'
-   main=f'<main id="main" class="project-page" data-project-id="{escape(p["id"],quote=True)}" data-project-title="{title}" data-project-status="{escape(p["status"])}" data-project-category="{category}"><a class="text-button" href="{home}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="crew-invite"><div><h2>{"Our projects. Our shared adventure." if en else "Наши проекты. Общее приключение."}</h2><p>{"Share something useful. Bring your own project — we’ll spread the word together." if en else "Расскажи о полезном. А когда создашь своё — приноси, будем продвигать вместе."}</p><div class="actions"><button class="button" data-kind="project">{"Add a project" if en else "Добавить проект"} ＋</button><a class="text-button" href="{home}#participate">{"Ways to get involved" if en else "Как участвовать"} →</a></div></div></section></main>'
-   page=re.sub(r'<main id="main">.*?</main>', lambda _:main, page, count=1, flags=re.S)
-   page=re.sub(r'<title>.*?</title>',lambda _:f'<title>{title} — GPU</title>',page,count=1)
-   for key,value in [('name="description"',description),('property="og:title"',title+' — GPU'),('property="og:description"',description)]:
-    page=re.sub(r'<meta '+key+r' content="[^"]*">',lambda _,k=key,v=value:f'<meta {k} content="{v}">',page,count=1)
-   lang_links=f'<span class="lang-switch"><a href="/workshop/projects/{escape(p["id"],quote=True)}/" lang="ru" {"" if en else "aria-current=page"}>RU</a><span>/</span><a href="/en/projects/{escape(p["id"],quote=True)}/" lang="en" {"aria-current=page" if en else ""}>EN</a></span>'
-   page=re.sub(r'<span class="lang-switch">.*?</span></header>',lambda _:lang_links+'</header>',page,count=1)
-   canonical='https://gpu.social'+path.rstrip('/')+'/'
-   page=page.replace('</head>',f'<link rel="canonical" href="{escape(canonical,quote=True)}"><meta property="og:url" content="{escape(canonical,quote=True)}"></head>')
-   return self.send(200,page,'text/html; charset=utf-8')
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
   routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/window.jpg':'window.jpg',BASE+'/rainbow.jpg':'rainbow.jpg',BASE+'/road.jpg':'road.jpg',BASE+'/community.jpg':'community.jpg',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}
   f=routes.get(path)
@@ -114,6 +94,7 @@ class Handler(BaseHTTPRequestHandler):
   types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml','json':'application/feed+json; charset=utf-8','xml':'application/rss+xml; charset=utf-8','png':'image/png','jpg':'image/jpeg'}
   return self.send(200,(ROOT/'public'/f).read_bytes(),types[f.rsplit('.',1)[1]])
  def do_POST(self):
+  if notifications.post(self,sys.modules[__name__],urlparse(self.path).path):return
   if urlparse(self.path).path!=BASE+'/api/submissions':return self.send(404,{'error':'Не найдено'})
   origin=self.headers.get('Origin',''); allowed={'https://gpu.social','http://127.0.0.1:9327','http://localhost:9327'}
   if origin not in allowed:return self.send(403,{'error':'Отправьте заявку через форму на сайте.'})

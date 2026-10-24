@@ -1,0 +1,177 @@
+"""Public HTML, news and discovery. Only published catalogue fields are read."""
+import json,re
+from datetime import datetime,timezone
+from html import escape as esc
+from urllib.parse import urlparse
+from xml.etree.ElementTree import Element,SubElement,tostring
+
+SITE='https://gpu.social'
+VISIBLE="('live','development','archived')"
+
+def projects(app,en=False):
+ with app.connect() as d:rows=[dict(r) for r in d.execute(f'SELECT * FROM projects WHERE status IN {VISIBLE} ORDER BY created,id')]
+ if en:
+  for p in rows:app.localize_english_project(p)
+ return rows
+
+def news(app):
+ items=json.loads((app.ROOT/'updates.json').read_text())
+ with app.connect() as d:
+  runtime=[json.loads(r[0]) for r in d.execute('SELECT data FROM runtime_updates')]
+  posts=[dict(r) for r in d.execute('SELECT * FROM update_posts ORDER BY created,url')]
+ known={i['id'] for i in items}
+ items=items+[i for i in runtime if i['id'] not in known]
+ for item in items:
+  for post in posts:
+   if post['update_id']==item['id']:
+    existing=item.setdefault('social_posts',[])
+    if not any(p['url']==post['url'] for p in existing):existing.append({'platform':post['platform'],'url':post['url']})
+    item['date_modified']=datetime.fromtimestamp(post['created'],timezone.utc).isoformat().replace('+00:00','Z')
+ return sorted(items,key=lambda i:i['date_published'],reverse=True)
+
+def post_text(app,item,en=False):
+ title=item.get('title_en',item['title']) if en else item['title']
+ summary=item.get('summary_en',item['summary']) if en else item['summary']
+ ids={urlparse(u).path.rstrip('/').split('/')[-1] for u in item.get('project_urls',[])}
+ rows=[p for p in projects(app,en) if p['id'] in ids]
+ return title+'\n\n'+summary+'\n\n'+'\n\n'.join(p['title']+' — '+p['author']+'\n'+p['description']+'\n'+SITE+project_url(p,en) for p in rows)+'\n\n'+('Try a project, share feedback, and bring your own — we’ll spread the word together.' if en else 'Пробуйте, делитесь отзывами и приносите своё — будем продвигать вместе.')+'\n'+SITE+news_url(item,en)
+
+def feed(app):
+ items=[]
+ for source in news(app):
+  item=dict(source);item['url']=SITE+news_url(item);item['url_en']=SITE+news_url(item,True)
+  item['content_text']=item['summary']+''.join('\n'+p['platform']+': '+p['url'] for p in item.get('social_posts',[]))
+  items.append(item)
+ return {'version':'https://jsonfeed.org/version/1.1','title':'GPU / Updates','home_page_url':SITE+'/','feed_url':SITE+'/workshop/feed.json','items':items}
+
+def news_url(item,en=False):
+ return ('/en/news/' if en else '/workshop/news/')+item['id']+'/'
+
+def project_url(p,en=False):
+ return ('/en/projects/' if en else '/workshop/projects/')+p['id']+'/'
+
+def social_links(item,en=False):
+ result=[]
+ for post in item.get('social_posts',[]):
+  url=post.get('url','');host=urlparse(url).hostname
+  if urlparse(url).scheme!='https' or host not in ('www.linkedin.com','linkedin.com','t.me'):continue
+  name=post.get('platform','LinkedIn')
+  label=('Support on ' if en else 'Поддержать в ')+name
+  result.append(f'<a class="text-button" data-support-post href="{esc(url,quote=True)}" target="_blank" rel="noopener noreferrer">{esc(label)} ↗</a>')
+ return ''.join(result)
+
+def card(p,en=False):
+ href=project_url(p,en);kind='business' if p['category']=='B2B' else 'tools'
+ action=''
+ if p['status']=='live' and urlparse(p['url']).scheme in ('http','https'):
+  action=f'<a class="card-action" data-project-outbound href="{esc(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Visit website" if en else "Перейти на сайт"} ↗</a>'
+ elif p['category']=='B2B':action=f'<a class="card-action" href="{href}">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</a>'
+ return f'<article class="card k-{kind}"><div class="card-meta"><span class="card-tags"><span class="chip">{esc(p["category"])}</span></span><span class="author">{esc(p["author"])}</span></div><h3><a href="{href}">{esc(p["title"])}</a></h3><p class="card-desc">{esc(p["description"])}</p><div class="card-bottom">{action}</div></article>'
+
+def news_card(item,en=False):
+ title=item.get('title_en',item['title']) if en else item['title']
+ summary=item.get('summary_en',item['summary']) if en else item['summary']
+ return f'<article class="update"><time datetime="{esc(item["date_published"])}">{esc(item["date_published"][:10])}</time><div><h3><a href="{news_url(item,en)}">{esc(title)}</a></h3><p>{esc(summary)}</p></div><div class="actions"><a class="text-button" href="{news_url(item,en)}">{"View projects" if en else "Посмотреть проекты"} ↗</a>{social_links(item,en)}</div></article>'
+
+def subscription_invite(en=False):
+ return f'<div class="subscribe-invite"><p>{"New projects. Only when there is news." if en else "Новые проекты. Только когда есть новости."}</p><a class="button" data-subscribe-open href="{"/en/subscribe/" if en else "/workshop/subscribe/"}">{"Get updates" if en else "Получать новинки"}</a></div>'
+
+def page(app,main,title,description,ru,en_path,en=False,schema=None):
+ html=(app.ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
+ html=re.sub(r'<main id="main">.*?</main>',lambda _:main,html,count=1,flags=re.S)
+ html=re.sub(r'<title>.*?</title>',lambda _:f'<title>{esc(title)}</title>',html,count=1)
+ for key,value in [('name="description"',description),('property="og:title"',title),('property="og:description"',description)]:
+  html=re.sub('<meta '+key+r' content="[^"]*">',lambda _,k=key,v=value:f'<meta {k} content="{esc(v,quote=True)}">',html,count=1)
+ ru_current='aria-current="page"' if not en else '';en_current='aria-current="page"' if en else ''
+ html=re.sub(r'<span class="lang-switch">.*?</span></header>',lambda _:f'<span class="lang-switch"><a href="{ru}" lang="ru" {ru_current}>RU</a><span>/</span><a href="{en_path}" lang="en" {en_current}>EN</a></span></header>',html,count=1)
+ extra=f'<link rel="canonical" href="{SITE+(en_path if en else ru)}"><link rel="alternate" hreflang="ru" href="{SITE+ru}"><link rel="alternate" hreflang="en" href="{SITE+en_path}"><link rel="alternate" hreflang="x-default" href="{SITE+en_path}"><meta property="og:url" content="{SITE+(en_path if en else ru)}">'
+ if schema:
+  data=json.dumps(schema,ensure_ascii=False).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
+  extra+='<script type="application/ld+json">'+data+'</script>'
+ return html.replace('</head>',extra+'</head>')
+
+def homepage(app,en):
+ html=(app.ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
+ rows=projects(app,en);regular=''.join(card(p,en) for p in rows if p['category']!='B2B');b2b=''.join(card(p,en) for p in rows if p['category']=='B2B')
+ html=re.sub(r'<div id="cards".*?</div>',lambda _:f'<div id="cards" class="cards" aria-live="polite">{regular}</div>',html,count=1,flags=re.S)
+ html=re.sub(r'<div id="b2b-cards".*?</div>',lambda _:f'<div id="b2b-cards" class="cards" aria-live="polite">{b2b}</div>',html,count=1,flags=re.S)
+ if b2b:html=html.replace('class="section b2b-section" hidden','class="section b2b-section"')
+ html=re.sub(r'<div id="updates">.*?</div>',lambda _:'<div id="updates">'+''.join(news_card(i,en) for i in news(app)[:4])+'</div>',html,count=1,flags=re.S)
+ match=re.search(r'<main id="main">.*?</main>',html,re.S)
+ main=match[0]
+ main=main.replace('<div id="updates">',subscription_invite(en)+'<div id="updates">',1)
+ main=main.replace('</main>',f'<p class="news-archive"><a class="text-button" href="{"/en/news/" if en else "/workshop/news/"}">{"All updates" if en else "Все новости"} →</a></p></main>')
+ schema={'@context':'https://schema.org','@type':'CollectionPage','name':'GPU Social','url':SITE+('/en/' if en else '/'),'mainEntity':{'@type':'ItemList','itemListElement':[{'@type':'ListItem','position':i+1,'url':SITE+project_url(p,en),'name':p['title']} for i,p in enumerate(rows)]}}
+ return page(app,main,'GPU — '+('projects by Gifted People United' if en else 'проекты сообщества Gifted People United'),'Community-built projects to explore, try and share.' if en else 'Проекты сообщества: пробуйте полезные инструменты, знакомьтесь с авторами и добавляйте своё.','/','/en/',en,schema)
+
+def project_page(app,p,en):
+ if en:app.localize_english_project(p)
+ title=esc(p['title']);author=esc(p['author']);category=esc(p['category']);description=esc(p['description'])
+ action=''
+ if p['status']=='live' and app.valid_url(p['url']):action=f'<a class="button" data-project-outbound href="{esc(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Visit website" if en else "Перейти на сайт"} ↗</a>'
+ if p['category']=='B2B' or not action:action+=f'<button class="button ghost" id="project-contact">{("Contact the developers" if en else "Связаться с разработчиками") if p["category"]=="B2B" else ("I want to try it" if en else "Хочу попробовать")} ↗</button>'
+ fields=json.loads((app.ROOT/'public/project-details.json').read_text()).get(p['id'],{})
+ language='en' if en else 'ru';details=''
+ labels={'audience':('Кому пригодится','Who it is for'),'example':('Пример использования','Example use'),'platforms':('Платформы','Platforms'),'access':('Условия доступа','Access')}
+ for key,(ru_label,en_label) in labels.items():
+  value=fields.get(key,{}).get(language)
+  if value:details+=f'<div><h2>{en_label if en else ru_label}</h2><p>{esc(value)}</p></div>'
+ related=[i for i in news(app) if any(urlparse(u).path.rstrip('/')==project_url(p).rstrip('/') for u in i.get('project_urls',[]))]
+ related_html=''
+ if related:related_html='<section class="project-updates"><h2>'+('Updates & community posts' if en else 'Новости и публикации')+'</h2>'+''.join(news_card(i,en) for i in related)+'</section>'
+ updated=f'<p class="muted">{"Description updated" if en else "Описание обновлено"}: {esc(fields["updated"])}</p>' if fields.get('updated') else ''
+ main=f'<main id="main" class="project-page" data-project-id="{esc(p["id"])}" data-project-title="{title}" data-project-status="{esc(p["status"])}" data-project-category="{category}"><a class="text-button" href="{"/en/" if en else "/"}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="project-facts">{details}</section>{updated}{related_html}{subscription_invite(en)}</main>'
+ schema={'@context':'https://schema.org','@type':'SoftwareApplication','name':p['title'],'description':p['description'],'url':SITE+project_url(p,en),'applicationCategory':p['category'],'author':{'@type':'Person','name':p['author']},'inLanguage':language}
+ if fields.get('platforms',{}).get('en'):schema['operatingSystem']=fields['platforms']['en']
+ if p['url']:schema['sameAs']=p['url']
+ return page(app,main,p['title']+' — GPU',p['description'],project_url(p),project_url(p,True),en,schema)
+
+def news_page(app,item,en):
+ title=item.get('title_en',item['title']) if en else item['title'];summary=item.get('summary_en',item['summary']) if en else item['summary']
+ ids={urlparse(u).path.rstrip('/').split('/')[-1] for u in item.get('project_urls',[])}
+ rows=[p for p in projects(app,en) if p['id'] in ids]
+ body=''.join(card(p,en) for p in rows)
+ main=f'<main id="main" class="news-page"><a class="text-button" href="{"/en/news/" if en else "/workshop/news/"}">← {"All updates" if en else "Все новости"}</a><time datetime="{esc(item["date_published"])}">{item["date_published"][:10]}</time><h1>{esc(title)}</h1><p class="lead">{esc(summary)}</p><div class="actions">{social_links(item,en)}<button class="text-button" id="share-news">{"Copy post" if en else "Скопировать пост"}</button><span id="share-news-status" role="status"></span></div><details class="agent-details"><summary>{"Ready-to-share post" if en else "Готовый текст для публикации"}</summary><div class="agent-details-body"><textarea id="news-post-text" readonly rows="10" aria-label="{"Post text" if en else "Текст поста"}">{esc(post_text(app,item,en))}</textarea></div></details><div class="cards news-projects">{body}</div>{subscription_invite(en)}</main>'
+ schema={'@context':'https://schema.org','@type':'BlogPosting','headline':title,'description':summary,'datePublished':item['date_published'],'inLanguage':'en' if en else 'ru','mainEntityOfPage':SITE+news_url(item,en),'publisher':{'@type':'Organization','name':'GPU — Gifted People United','url':SITE},'author':{'@type':'Organization','name':'GPU — Gifted People United'},'about':[{'@type':'SoftwareApplication','name':p['title'],'url':SITE+project_url(p,en)} for p in rows]}
+ return page(app,main,title+' — GPU',summary,news_url(item),news_url(item,True),en,schema)
+
+def response(app,path):
+ if path=='/workshop/feed.json':return 200,feed(app),'application/feed+json; charset=utf-8'
+ if path=='/workshop/feed.xml':
+  from email.utils import format_datetime
+  root=Element('rss',version='2.0');channel=SubElement(root,'channel')
+  for name,value in [('title','GPU / Updates'),('link',SITE+'/'),('description','New projects from Gifted People United')]:SubElement(channel,name).text=value
+  for item in feed(app)['items']:
+   row=SubElement(channel,'item')
+   for name,value in [('title',item['title']),('link',item['url']),('description',item['content_text']),('guid',item['id']),('pubDate',format_datetime(datetime.fromisoformat(item['date_published'].replace('Z','+00:00'))))]:SubElement(row,name).text=value
+  return 200,tostring(root,encoding='utf-8',xml_declaration=True),'application/rss+xml; charset=utf-8'
+ if path in ('/','/en/'):return 200,homepage(app,path.startswith('/en/')),'text/html; charset=utf-8'
+ if path in ('/workshop','/workshop/'):
+  return None # Handler redirects these aliases.
+ if path=='/robots.txt':return 200,'User-agent: *\nAllow: /\nDisallow: /workshop/api/\nDisallow: /en/api/\nDisallow: /workshop/subscription/\nSitemap: '+SITE+'/sitemap.xml\n','text/plain; charset=utf-8'
+ if path=='/sitemap.xml':
+  root=Element('urlset',xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
+  pairs=[('/','/en/'),('/workshop/people/','/en/people/'),('/workshop/news/','/en/news/')]+[(project_url(p),project_url(p,True)) for p in projects(app)]+[(news_url(i),news_url(i,True)) for i in news(app)]
+  for pair in pairs:
+   for loc in pair:
+    node=SubElement(root,'url');SubElement(node,'loc').text=SITE+loc
+    for lang,href in zip(('ru','en'),pair):SubElement(node,'{http://www.w3.org/1999/xhtml}link',rel='alternate',hreflang=lang,href=SITE+href)
+  return 200,tostring(root,encoding='utf-8',xml_declaration=True),'application/xml; charset=utf-8'
+ match=re.fullmatch(r'/(workshop|en)/projects/([^/]+)/?',path)
+ if match:
+  with app.connect() as d:row=d.execute(f'SELECT * FROM projects WHERE id=? AND status IN {VISIBLE}',(match[2],)).fetchone()
+  if not row:return 404,{'error':'Project not found'},'application/json; charset=utf-8'
+  return 200,project_page(app,dict(row),match[1]=='en'),'text/html; charset=utf-8'
+ match=re.fullmatch(r'/(workshop|en)/news(?:/([^/]+))?/?',path)
+ if match:
+  en=match[1]=='en'
+  if match[2]:
+   item=next((i for i in news(app) if i['id']==match[2]),None)
+   if not item:return 404,{'error':'Update not found'},'application/json; charset=utf-8'
+   return 200,news_page(app,item,en),'text/html; charset=utf-8'
+  main='<main id="main" class="news-page"><h1>'+('What’s new at GPU' if en else 'Что нового в GPU')+'</h1>'+subscription_invite(en)+''.join(news_card(i,en) for i in news(app))+'</main>'
+  return 200,page(app,main,'GPU — '+('Updates' if en else 'Новости'),'New projects and updates from Gifted People United.' if en else 'Новые проекты и новости сообщества Gifted People United.','/workshop/news/','/en/news/',en),'text/html; charset=utf-8'
+ if path in ('/workshop/people/','/en/people/'):
+  en=path.startswith('/en/');html=(app.ROOT/'public'/('people-en.html' if en else 'people.html')).read_text();main=re.search(r'<main id="main".*?</main>',html,re.S)[0]
+  return 200,page(app,main,'PEOPLE — GPU','People building GPU together.','/workshop/people/','/en/people/',en),'text/html; charset=utf-8'
+ return None

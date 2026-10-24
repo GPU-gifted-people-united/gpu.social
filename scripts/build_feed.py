@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build public feeds from reviewed updates only. Never read submissions."""
-import json
+import json,re
+from urllib.parse import urlparse
 from pathlib import Path
 from datetime import datetime
 from email.utils import format_datetime
@@ -11,9 +12,13 @@ seen = set()
 for item in items:
     assert item['id'] not in seen, 'Duplicate update ID'
     seen.add(item['id'])
+    assert re.fullmatch(r'[a-z0-9-]+', item['id']), 'Use a stable update slug'
+    for post in item.get('social_posts', []):
+        target=urlparse(post['url'])
+        assert target.scheme=='https' and target.hostname in ('www.linkedin.com','linkedin.com','t.me'), 'Use a public post URL'
     assert item['url'].startswith('https://gpu.social/'), 'Use a public GPU URL'
     datetime.fromisoformat(item['date_published'].replace('Z', '+00:00'))
-feed = {'version': 'https://jsonfeed.org/version/1.1', 'title': 'GPU / Expedition log', 'home_page_url': 'https://gpu.social/', 'feed_url': 'https://gpu.social/workshop/feed.json', 'items': [{**i, 'content_text': i['summary']} for i in items]}
+feed = {'version': 'https://jsonfeed.org/version/1.1', 'title': 'GPU / Expedition log', 'home_page_url': 'https://gpu.social/', 'feed_url': 'https://gpu.social/workshop/feed.json', 'items': [{**i, 'content_text': i['summary']+''.join('\n'+p['platform']+': '+p['url'] for p in i.get('social_posts',[]))} for i in items]}
 (ROOT / 'public/feed.json').write_text(json.dumps(feed, ensure_ascii=False, indent=2) + '\n')
 rss = Element('rss', version='2.0')
 channel = SubElement(rss, 'channel')
@@ -21,7 +26,7 @@ for name, value in [('title', 'GPU / Expedition log'), ('link', 'https://gpu.soc
     SubElement(channel, name).text = value
 for i in items:
     entry = SubElement(channel, 'item')
-    for name, value in [('title', i['title']), ('link', i['url']), ('description', i['summary']), ('pubDate', format_datetime(datetime.fromisoformat(i['date_published'].replace('Z', '+00:00'))))]:
+    for name, value in [('title', i['title']), ('link', i['url']), ('description', i['summary']+''.join('\n'+p['platform']+': '+p['url'] for p in i.get('social_posts',[]))), ('pubDate', format_datetime(datetime.fromisoformat(i['date_published'].replace('Z', '+00:00'))))]:
         SubElement(entry, name).text = value
     SubElement(entry, 'guid', isPermaLink='false').text = i['id']
 (ROOT / 'public/feed.xml').write_bytes(tostring(rss, encoding='utf-8', xml_declaration=True))

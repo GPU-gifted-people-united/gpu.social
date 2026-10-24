@@ -1,0 +1,9 @@
+[Unit]
+Description=Process confirmed GPU subscriptions and new project batches
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=60
+RandomizedDelaySec=10
+Unit=gpu-newsletter.service
+[Install]
+WantedBy=timers.target

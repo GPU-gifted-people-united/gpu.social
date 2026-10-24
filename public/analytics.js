@@ -13,3 +13,11 @@ document.addEventListener('click', event => {
     prompt_location: button.hasAttribute('data-copy-prompt') ? 'community' : 'participate'
   });
 });
+
+document.addEventListener('click', event => {
+  if (!(event.target instanceof Element)) return;
+  const link = event.target.closest('[data-support-post], [data-project-outbound], [data-subscribe-open]');
+  if (!link) return;
+  const name = link.hasAttribute('data-support-post') ? 'support_post_click' : link.hasAttribute('data-project-outbound') ? 'project_website_click' : 'newsletter_open';
+  gtag('event', name, {language:document.documentElement.lang});
+});

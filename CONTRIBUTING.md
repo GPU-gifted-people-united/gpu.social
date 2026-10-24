@@ -6,7 +6,7 @@ GPU is our shared home. Pick a useful change, open a pull request, and explain w
 
 - Python 3.10+; no runtime packages needed.
 - `python3 server.py`, then http://127.0.0.1:9327/workshop/.
-- `python3 test_api.py` checks persistence, privacy and public routes.
+- `python3 -m unittest test_api test_updates` checks persistence, privacy, public routes and the subscription lifecycle.
 - `node --check public/app.js` checks JavaScript syntax.
 - Check Russian, English and a phone viewport before submitting UI changes.
 
@@ -18,7 +18,10 @@ GPU is our shared home. Pick a useful change, open a pull request, and explain w
 - `public/style.css`, `public/expedition.svg`: visual design.
 - `public/app.js`: catalogue, forms, feed, prompt and sharing.
 - `updates.json`: reviewed public updates. IDs must remain stable. Run `python3 scripts/build_feed.py` after editing; commit both generated feeds.
-- `server.py`: public project pages, API and private submissions.
+- `server.py`: API and private submissions.
+- `public_pages.py`: server-rendered catalogue, project/news pages, metadata and sitemaps.
+- `notifications.py`: confirmed email subscriptions, batched announcements and delivery queue.
+- `public/project-details.json`: bilingual project facts and editorial update dates.
 - `projects.json`: initial projects; published projects live in the server database. English translations are in `EN_PROJECTS`.
 
 ## Small starter tasks

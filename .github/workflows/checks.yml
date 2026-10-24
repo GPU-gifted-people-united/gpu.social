@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - run: python3 test_api.py
+      - run: python3 -m unittest test_api test_updates
       - run: node --check public/app.js
       - run: python3 scripts/build_feed.py
       - run: git diff --exit-code -- public/feed.json public/feed.xml

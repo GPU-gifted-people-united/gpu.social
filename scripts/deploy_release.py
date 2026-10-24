@@ -9,7 +9,7 @@ commit=command.split()[1]
 base=Path('/opt/gpu-workshop');release=base/'releases'/('gh-'+commit)
 data=sys.stdin.buffer.read(12_000_001)
 if len(data)>12_000_000:raise SystemExit('Release too large')
-allowed={'server.py','manage.py','projects.json','README.md','CONTRIBUTING.md','updates.json'}
+allowed={'server.py','public_pages.py','notifications.py','gpu-newsletter.service','gpu-newsletter.timer','manage.py','projects.json','README.md','CONTRIBUTING.md','updates.json'}
 with tarfile.open(fileobj=io.BytesIO(data),mode='r:gz') as archive:
     members=archive.getmembers()
     if sum(m.size for m in members)>30_000_000:raise SystemExit('Expanded release too large')
@@ -25,7 +25,7 @@ with tarfile.open(fileobj=io.BytesIO(data),mode='r:gz') as archive:
         else:
             target.parent.mkdir(parents=True,exist_ok=True)
             target.write_bytes(archive.extractfile(m).read());target.chmod(0o644)
-for file in ['server.py','manage.py','projects.json','public/index.html','public/index-en.html','public/app.js','public/style.css']:
+for file in ['server.py','public_pages.py','notifications.py','manage.py','projects.json','public/index.html','public/index-en.html','public/app.js','public/style.css']:
     if not (release/file).is_file():raise SystemExit('Incomplete release')
 json.loads((release/'projects.json').read_text())
 subprocess.run(['/usr/bin/python3','-m','py_compile',str(release/'server.py')],check=True)
@@ -33,6 +33,10 @@ backup=Path('/var/backups/gpu-workshop');backup.mkdir(mode=0o700,exist_ok=True)
 with sqlite3.connect('/var/lib/gpu-workshop/workshop.sqlite3') as source:
     with sqlite3.connect(backup/(str(int(time.time()))+'-'+commit[:8]+'.sqlite3')) as target:source.backup(target)
 for p in backup.glob('*.sqlite3'):p.chmod(0o600)
+for unit in ['gpu-newsletter.service','gpu-newsletter.timer']:
+    unit_file=release/unit
+    if unit_file.exists():(Path('/etc/systemd/system')/unit).write_bytes(unit_file.read_bytes())
+subprocess.run(['/usr/bin/systemctl','daemon-reload'],check=True)
 current=base/'current';previous=current.resolve();temporary=base/'next'
 temporary.unlink(missing_ok=True);temporary.symlink_to(release);temporary.replace(current)
 subprocess.run(['/usr/bin/systemctl','restart','gpu-workshop'],check=True)
@@ -45,3 +49,6 @@ else:
     temporary.symlink_to(previous);temporary.replace(current)
     subprocess.run(['/usr/bin/systemctl','restart','gpu-workshop'],check=True)
     raise SystemExit('Health check failed; restored previous release')
+
+if Path('/etc/gpu-workshop/notifications.env').exists():
+    subprocess.run(['/usr/bin/systemctl','enable','--now','gpu-newsletter.timer'],check=True)
