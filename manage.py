@@ -1,15 +1,35 @@
 #!/usr/bin/env python3
 """Private moderation CLI. Run through SSH, never expose via HTTP."""
-import argparse,json,time,uuid
+import argparse,json,time,uuid,sys
+import server,notifications,public_pages
 from server import connect,init,valid_url
 p=argparse.ArgumentParser(); sub=p.add_subparsers(dest='action',required=True)
 sub.add_parser('inbox')
+sub.add_parser('notify')
+sub.add_parser('newsletter-status')
+a=sub.add_parser('posts');a.add_argument('update_id');a.add_argument('--lang',choices=['ru','en'],default='ru')
+a=sub.add_parser('social');a.add_argument('update_id');a.add_argument('--platform',choices=['LinkedIn','Telegram'],required=True);a.add_argument('--url',required=True)
 a=sub.add_parser('show');a.add_argument('id')
 a=sub.add_parser('close');a.add_argument('id')
 a=sub.add_parser('publish');a.add_argument('id');a.add_argument('--status',choices=['live','archived','development'],required=True);a.add_argument('--category',required=True)
 a=sub.add_parser('status');a.add_argument('id');a.add_argument('status',choices=['live','archived','development','hidden'])
 a=sub.add_parser('edit');a.add_argument('id');a.add_argument('--title');a.add_argument('--description');a.add_argument('--url');a.add_argument('--author')
 args=p.parse_args();init()
+if args.action=='notify':
+ result=notifications.run(server);print(json.dumps(result));raise SystemExit(1 if result.get('failed') else 0)
+if args.action in ('posts','social'):
+ item=next((i for i in public_pages.news(server) if i['id']==args.update_id),None)
+ if not item:raise SystemExit('Update not found')
+ if args.action=='posts':print(public_pages.post_text(server,item,args.lang=='en'));raise SystemExit()
+ from urllib.parse import urlparse
+ url=urlparse(args.url)
+ if url.scheme!='https' or url.hostname not in ({'www.linkedin.com','linkedin.com','lnkd.in'} if args.platform=='LinkedIn' else {'t.me'}):raise SystemExit('Use a public LinkedIn or Telegram post URL')
+ with connect() as d:d.execute('INSERT OR IGNORE INTO update_posts VALUES(?,?,?,?)',(args.update_id,args.platform,args.url,int(time.time())))
+ print('Post linked');raise SystemExit()
+if args.action=='newsletter-status':
+ with connect() as d:
+  print(json.dumps({'subscribers':dict(d.execute('SELECT status,count(*) FROM subscribers GROUP BY status').fetchall()),'jobs':dict(d.execute('SELECT status,count(*) FROM notification_jobs GROUP BY status').fetchall())}))
+ raise SystemExit()
 with connect() as d:
  if args.action=='inbox':
   for r in d.execute("SELECT id,kind,title,created FROM submissions WHERE status='pending' ORDER BY created"):print(json.dumps(dict(r),ensure_ascii=False))

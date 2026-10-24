@@ -1,0 +1,230 @@
+{
+  "aufix": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Владельцам личных авто и компаниям с автопарком.",
+      "en": "Personal vehicle owners and businesses managing fleets."
+    },
+    "example": {
+      "ru": "Соберите расходы на топливо и ремонт, документы и напоминания об обслуживании для каждого автомобиля.",
+      "en": "Keep fuel and repair costs, documents and maintenance reminders together for each vehicle."
+    },
+    "platforms": {
+      "ru": "Web, iOS и Android.",
+      "en": "Web, iOS and Android."
+    },
+    "access": {
+      "ru": "Есть бесплатный старт; лимиты и функции автопарка зависят от тарифа.",
+      "en": "Free to start; fleet limits and features depend on the plan."
+    }
+  },
+  "weekly-menu": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Тем, кто планирует питание семьи и хочет уложиться в бюджет.",
+      "en": "People planning household meals within a budget."
+    },
+    "example": {
+      "ru": "Задайте бюджет, состав семьи и предпочтения, чтобы получить завтраки, обеды и ужины на неделю.",
+      "en": "Enter a budget, household details and preferences to generate a week of breakfasts, lunches and dinners."
+    },
+    "platforms": {
+      "ru": "Web, в браузере.",
+      "en": "Web browser."
+    },
+    "access": {
+      "ru": "Параметры меню и актуальные условия доступны в приложении.",
+      "en": "Meal settings and current access terms are available in the app."
+    }
+  },
+  "video-metadata-cleaner": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Авторам, которым нужно очистить сведения о происхождении видео.",
+      "en": "Creators who need to remove video provenance metadata."
+    },
+    "example": {
+      "ru": "Загрузите видео для проверки и удаления сведений C2PA, сохранив картинку и звук.",
+      "en": "Upload a video to check and remove C2PA data while preserving picture and sound."
+    },
+    "platforms": {
+      "ru": "Web, в браузере.",
+      "en": "Web browser."
+    },
+    "access": {
+      "ru": "Платная обработка файлов без регистрации и подписки. Видимые водяные знаки не удаляет; исчезновение отметок площадок не гарантируется.",
+      "en": "Paid file processing without registration or a subscription. Visible watermarks are not removed; disappearance of platform labels is not guaranteed."
+    }
+  },
+  "nashday": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Парам, которые готовятся к свадьбе.",
+      "en": "Couples planning their wedding."
+    },
+    "example": {
+      "ru": "Создайте сайт-приглашение и ведите список гостей в одном месте.",
+      "en": "Create an invitation website and keep your guest list in one place."
+    },
+    "platforms": {
+      "ru": "Web, в браузере.",
+      "en": "Web browser."
+    },
+    "access": {
+      "ru": "Возможности оформления и условия уточняйте на сайте проекта.",
+      "en": "See the project website for design options and current terms."
+    }
+  },
+  "bayun": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Компаниям, которые хотят разбирать клиентские разговоры и улучшать сервис.",
+      "en": "Businesses looking to review customer conversations and improve service."
+    },
+    "example": {
+      "ru": "Анализируйте звонки и разговоры сотрудников с клиентами; в офлайне используются аудиобейджи.",
+      "en": "Analyse calls and staff conversations with customers; audio badges capture in-person conversations."
+    },
+    "platforms": {
+      "ru": "Web-платформа и оборудование для записи офлайн-разговоров.",
+      "en": "Web platform and recording hardware for in-person conversations."
+    },
+    "access": {
+      "ru": "Подключение и аудит обсуждаются с командой Bayun.",
+      "en": "Contact the Bayun team about setup and a conversation audit."
+    }
+  },
+  "grabster": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Тем, кто учит иностранный язык по видео и другому контенту.",
+      "en": "Language learners using videos and other on-screen content."
+    },
+    "example": {
+      "ru": "Зажмите ⌥Space, наведите на слово и отпустите: сохранится карточка с предложением для интервального повторения.",
+      "en": "Hold ⌥Space, hover over a word and release to save a contextual flashcard for spaced-repetition review."
+    },
+    "platforms": {
+      "ru": "macOS 14 и новее; Apple Silicon и Intel.",
+      "en": "macOS 14 or later; Apple Silicon and Intel."
+    },
+    "access": {
+      "ru": "Публичная бета. Скачать можно на сайте проекта.",
+      "en": "Public beta. Download it from the project website."
+    }
+  },
+  "shelter-12": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Компаниям друзей из 4–12 человек, собравшимся вместе.",
+      "en": "Groups of 4–12 friends playing together in person."
+    },
+    "example": {
+      "ru": "Каждый получает досье на своём телефоне, спорит и голосует; изгнанные продолжают играть из подвала.",
+      "en": "Each player gets a dossier on their phone, debates and votes; exiled players keep playing from the basement."
+    },
+    "platforms": {
+      "ru": "По опубликованной ссылке доступна версия для iPhone.",
+      "en": "The published link opens the iPhone version."
+    },
+    "access": {
+      "ru": "Базовая игра бесплатна и без рекламы; есть дополнительные покупки.",
+      "en": "The base game is free and ad-free; optional in-app purchases are available."
+    }
+  },
+  "codex-limits": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Пользователям Codex с несколькими изолированными аккаунтами.",
+      "en": "Codex users managing multiple separate accounts."
+    },
+    "example": {
+      "ru": "Смотрите остаток недельных лимитов и время сброса нескольких аккаунтов в одном окне.",
+      "en": "See weekly remaining limits and reset times for multiple accounts in one window."
+    },
+    "platforms": {
+      "ru": "macOS.",
+      "en": "macOS."
+    },
+    "access": {
+      "ru": "Открытый исходный код; установка и настройка описаны в README репозитория.",
+      "en": "Open source; installation and setup are documented in the repository README."
+    }
+  },
+  "actor-replacement-studio": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Авторам видео, которым нужны инструменты замены персонажа и голоса.",
+      "en": "Video creators looking for character and voice replacement tools."
+    },
+    "example": {
+      "ru": "Откройте веб-студию и познакомьтесь с доступными инструментами работы с видео.",
+      "en": "Open the web studio and explore its available video tools."
+    },
+    "platforms": {
+      "ru": "Web, в браузере.",
+      "en": "Web browser."
+    },
+    "access": {
+      "ru": "Доступные функции и условия работы смотрите в студии.",
+      "en": "See the studio for currently available features and access terms."
+    }
+  },
+  "aiconic-space": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Тем, кто следит за AI, инструментами и автоматизацией.",
+      "en": "People following AI, tools and automation."
+    },
+    "example": {
+      "ru": "Читайте автоматически подготовленные материалы и переходите к указанным источникам.",
+      "en": "Read automatically prepared articles and follow their source links."
+    },
+    "platforms": {
+      "ru": "Web, в браузере.",
+      "en": "Web browser."
+    },
+    "access": {
+      "ru": "Лента материалов доступна по ссылке на проект.",
+      "en": "The content feed is available through the project link."
+    }
+  },
+  "a5ed425d-f006-435e-ae60-0e9319e1b6c7": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Тем, кто изучает варианты трансграничных переводов.",
+      "en": "People researching cross-border transfer routes."
+    },
+    "example": {
+      "ru": "Сравнивайте маршруты и оценки на основе публичных рыночных данных.",
+      "en": "Compare routes and estimates based on public market data."
+    },
+    "platforms": {
+      "ru": "Web, в браузере.",
+      "en": "Web browser."
+    },
+    "access": {
+      "ru": "Доступ и актуальные возможности указаны на сайте проекта.",
+      "en": "See the project website for access and current functionality."
+    }
+  },
+  "price-monitor": {
+    "updated": "2026-10-24",
+    "audience": {
+      "ru": "Розничным сетям и коммерческим командам.",
+      "en": "Retail chains and commercial teams."
+    },
+    "example": {
+      "ru": "Сравнивайте цены конкурентов, согласовывайте изменения и проверяйте обновлённые цены по данным 1С.",
+      "en": "Compare competitor prices, approve changes and verify updated prices against 1C data."
+    },
+    "platforms": {
+      "ru": "Решение для бизнеса с интеграцией данных.",
+      "en": "Business software with data integration."
+    },
+    "access": {
+      "ru": "Связь с разработчиками через заявку GPU; публичной ссылки на приложение нет.",
+      "en": "Contact the developers through GPU; no public application URL is listed."
+    }
+  }
+}

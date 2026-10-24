@@ -18,7 +18,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Package reviewed release
-        run: tar -czf /tmp/gpu-release.tar.gz server.py manage.py projects.json public README.md CONTRIBUTING.md updates.json
+        run: tar -czf /tmp/gpu-release.tar.gz server.py public_pages.py notifications.py manage.py projects.json public README.md CONTRIBUTING.md updates.json gpu-newsletter.service gpu-newsletter.timer
       - name: Deploy with restricted key
         env:
           DEPLOY_KEY: ${{ secrets.GPU_DEPLOY_KEY }}

@@ -32,3 +32,22 @@ The Dot command authorises scoped daily support through accounts connected by ea
 GA4 records `dot_prompt_copy_click` for either Dot copy button, with language and placement only. This measures button presses, not successful clipboard writes or Dot activation. Browser-level analytics blocking may exclude some presses.
 
 English project titles and maker names are mapped in EN_TITLES and EN_AUTHORS in server.py. The catalogue API and detail pages use the same localisation so sharing and metadata match the visible title.
+
+## News, search and subscriptions
+
+The public catalogue and news are rendered in HTML by public_pages.py, then enhanced by app.js. Public routes include /workshop/news/ID/, /en/news/ID/, /robots.txt and /sitemap.xml. Pages have canonical and reciprocal hreflang links. Project facts live in public/project-details.json; update facts and their editorial date when reviewing a project. Hidden projects are excluded from discovery.
+
+updates.json remains the reviewed editorial source. The newsletter worker additionally groups newly published catalogue projects after a quiet 15-minute window into runtime_updates in the private SQLite database. The deployment baseline prevents announcing the old catalogue to new subscribers. All public feeds/pages merge these records; they never read pending submissions or subscriber contacts. Fresh approvals therefore become one shared news item, subscription email and ready-to-copy post. Existing update IDs are stable.
+
+Email setup requires GPU_SUBSCRIBE_SECRET (a persistent random key), GPU_SMTP_HOST, GPU_SMTP_PORT and GPU_MAIL_FROM. Production uses the existing loopback Postfix relay and signed agent.gpu.social sender. Keep configuration in /etc/gpu-workshop/notifications.env, outside Git, loaded by the web service and gpu-newsletter.service. External relays may additionally use GPU_SMTP_SSL or GPU_SMTP_STARTTLS and GPU_SMTP_USER/GPU_SMTP_PASSWORD. Never use plaintext external SMTP. The queue runs from gpu-newsletter.timer once a minute and retries transient delivery failures with backoff. No Telegram bot is configured; the community link remains available.
+
+Email subscriptions require an explicit confirmation POST from the emailed link. Until confirmation no news is sent. Old news is not broadcast on joining. Every news email includes an unsubscribe link and one-click unsubscribe headers; GET alone does not confirm or unsubscribe. Private token pages do not load analytics. Tokens are signed and versioned, confirmation expires in 48 hours, and subscriptions and job records stay out of public APIs. A stopped subscription suppresses future delivery. As with SMTP queues generally, a crash after provider acceptance but before recording success can produce a retry; stable Message-ID and unique delivery records reduce duplicates.
+
+Private commands:
+
+- `python3 manage.py notify` — process announcements and the delivery queue (systemd normally runs this).
+- `python3 manage.py newsletter-status` — aggregate subscriber/job states without addresses.
+- `python3 manage.py posts UPDATE_ID --lang en` — prepare a complete social post from public project data.
+- `python3 manage.py social UPDATE_ID --platform LinkedIn --url https://www.linkedin.com/posts/...` — attach an already published public post to the news, website, emails and agent feed. Use a canonical LinkedIn URL or t.me post URL. Dot checks newly added post URLs even when the news item already existed.
+
+GA4 preserves dot_prompt_copy_click and adds newsletter_open, newsletter_signup_request, support_post_click and project_website_click without addresses or subscription tokens. Validate delivery with an explicitly authorised test address. Do not use submission contacts as a mailing list.
