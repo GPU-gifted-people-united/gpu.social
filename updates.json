@@ -1,5 +1,20 @@
 [
   {
+    "id": "gpu-new-projects-2026-10-24",
+    "date_published": "2026-10-24T06:37:35Z",
+    "title": "Ещё три проекта в GPU",
+    "title_en": "Three more projects on GPU",
+    "summary": "Очистка метаданных видео и Меню на неделю от @yuka_k, а также Aufix от Максима — расходы, обслуживание и документы личных авто и автопарков.",
+    "summary_en": "Video Metadata Cleaner and Weekly Menu by @yuka_k, plus Aufix by Maxim for personal-vehicle and fleet expenses, maintenance and documents.",
+    "url": "https://gpu.social/#projects",
+    "url_en": "https://gpu.social/en/#projects",
+    "project_urls": [
+      "https://gpu.social/workshop/projects/video-metadata-cleaner/",
+      "https://gpu.social/workshop/projects/weekly-menu/",
+      "https://gpu.social/workshop/projects/aufix/"
+    ]
+  },
+  {
     "id": "gpu-new-projects-2026-10-19",
     "date_published": "2026-10-19T12:27:39Z",
     "title": "Четыре новых проекта от Ивана, Дарьи и Влада",

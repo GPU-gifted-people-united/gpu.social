@@ -10,6 +10,9 @@ ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
 EN_PROJECTS={
+ 'video-metadata-cleaner':('Video', 'Removes C2PA provenance and editing metadata from videos without changing picture or sound. Removal of platform AI-info labels is not guaranteed.'),
+ 'weekly-menu':('Food', 'Generates a weekly meal plan within your budget, with breakfasts, lunches and dinners tailored to your household and preferences.'),
+ 'aufix':('B2B', 'Track expenses and manage a personal vehicle or business fleet: fuel, maintenance, reminders and documents in one place. Available on web, iOS and Android, with up to 500 vehicles depending on the plan.'),
  'nashday':('Events', 'Create a wedding invitation website and manage your guest list in one place.'),
  'bayun':('B2B', 'Conversation analytics for businesses: analyse calls and in-person customer conversations captured by audio badges to identify opportunities to improve sales and service.'),
  'grabster':('Learning', 'A macOS app that turns unfamiliar words from videos and other on-screen content into contextual flashcards. Hold ⌥Space, hover over a word, and release; review saved words with spaced repetition. Public beta.'),
@@ -25,8 +28,8 @@ EN_PROJECTS={
 }
 
 
-EN_TITLES={'nashday':'Our Day','price-monitor':'Price Monitor'}
-EN_AUTHORS={'nashday':'Ivan Shvedov','bayun':'Ivan Shvedov','shelter-12':'Vlad','price-monitor':'Andrey'}
+EN_TITLES={'video-metadata-cleaner':'Video Metadata Cleaner','weekly-menu':'Weekly Menu','aufix':'Aufix','nashday':'Our Day','price-monitor':'Price Monitor'}
+EN_AUTHORS={'video-metadata-cleaner':'@yuka_k','weekly-menu':'@yuka_k','aufix':'Maxim','nashday':'Ivan Shvedov','bayun':'Ivan Shvedov','shelter-12':'Vlad','price-monitor':'Andrey'}
 
 def localize_english_project(project):
  project['category'],project['description']=EN_PROJECTS.get(project['id'],(project['category'],project['description']))
