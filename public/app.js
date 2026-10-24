@@ -2,6 +2,7 @@
 const english = document.documentElement.lang === 'en';
 const copy = {
   'Связаться с разработчиками': 'Contact the developers',
+  'Перейти на сайт': 'Visit website',
   'Внедрён': 'Deployed',
   'Расскажи, что нужно твоему бизнесу. Команда мастерской рассмотрит запрос и поможет связаться с разработчиками.': 'Tell us what your business needs. The workshop team will review your request and help you connect with the developers.',
   'Какая задача у вашего бизнеса и что хотите обсудить с разработчиками?': 'What does your business need, and what would you like to discuss with the developers?',
@@ -78,14 +79,16 @@ function render() {
     share.setAttribute('aria-label', (english ? 'Share ' : 'Поделиться: ') + p.title);
     const feedback = el('div', 'share-feedback'); feedback.setAttribute('role', 'status');
     share.onclick = () => shareProject({title: p.title, text: p.title + '\n' + p.description, url: 'https://gpu.social' + detail.getAttribute('href')}, feedback);
+    const hasWebsite = p.status === 'live' && /^https?:\/\//.test(p.url);
+    if (hasWebsite) {
+      const link = el('a', 'card-action', tr(p.category === 'B2B' ? 'Перейти на сайт' : p.id === 'actor-replacement-studio' ? 'Хочу попробовать' : 'Посмотреть'));
+      link.href = p.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.append(el('span', '', '↗')); bottom.append(link);
+    }
     if (p.category === 'B2B') {
       const button = el('button', 'card-action', tr('Связаться с разработчиками'));
       button.type = 'button'; button.append(el('span', '', '↗')); button.onclick = () => openForm('contact', p); bottom.append(button);
-    } else if (p.status === 'live' && /^https?:\/\//.test(p.url)) {
-      const link = el('a', 'card-action', tr(p.id === 'actor-replacement-studio' ? 'Хочу попробовать' : 'Посмотреть'));
-      link.href = p.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
-      link.append(el('span', '', '↗')); bottom.append(link);
-    } else {
+    } else if (!hasWebsite) {
       const button = el('button', 'card-action', tr(p.status === 'development' ? 'Хочу попробовать' : 'Мне это нужно'));
       button.type = 'button'; button.append(el('span', '', '↗')); button.onclick = () => openForm('revive', p); bottom.append(button);
     }

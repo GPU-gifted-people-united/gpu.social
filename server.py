@@ -90,11 +90,12 @@ class Handler(BaseHTTPRequestHandler):
    page=(ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
    title=escape(p['title']); description=escape(p['description']); category=escape(p['category']); author=escape(p['author'])
    action=''
+   if p['status']=='live' and valid_url(p['url']):
+    label=('Visit website' if en else 'Перейти на сайт') if p['category']=='B2B' else ('Try the project' if en else 'Попробовать проект')
+    action=f'<a class="button" href="{escape(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{label} ↗</a>'
    if p['category']=='B2B':
-    action=f'<button class="button" id="project-contact">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</button>'
-   elif p['status']=='live' and valid_url(p['url']):
-    action=f'<a class="button" href="{escape(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Try the project" if en else "Попробовать проект"} ↗</a>'
-   else:
+    action+=f'<button class="button" id="project-contact">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</button>'
+   elif not action:
     action=f'<button class="button" id="project-contact">{"I want to try it" if en else "Хочу попробовать"} ↗</button>'
    main=f'<main id="main" class="project-page" data-project-id="{escape(p["id"],quote=True)}" data-project-title="{title}" data-project-status="{escape(p["status"])}" data-project-category="{category}"><a class="text-button" href="{home}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="crew-invite"><div><h2>{"Our projects. Our shared adventure." if en else "Наши проекты. Общее приключение."}</h2><p>{"Share something useful. Bring your own project — we’ll spread the word together." if en else "Расскажи о полезном. А когда создашь своё — приноси, будем продвигать вместе."}</p><div class="actions"><button class="button" data-kind="project">{"Add a project" if en else "Добавить проект"} ＋</button><a class="text-button" href="{home}#participate">{"Ways to get involved" if en else "Как участвовать"} →</a></div></div></section></main>'
    page=re.sub(r'<main id="main">.*?</main>', lambda _:main, page, count=1, flags=re.S)
