@@ -1,0 +1,155 @@
+[
+  {
+    "id": "baattle-royale",
+    "project_id": "baattle-royale",
+    "date_published": "2026-10-30T01:10:39+04:00",
+    "title": {
+      "ru": "Baattle Royale: как сыграть в битву баранов прямо в браузере",
+      "en": "Baattle Royale: how to play a battle royale of rams in your browser"
+    },
+    "summary": {
+      "ru": "Таранить соперников, убегать от косилки и остаться последним бараном на лугу. Разбираемся, как начать соло или собрать друзей в игре Maks Kurilenko.",
+      "en": "Ram opponents, outrun a lawn mower and be the last ram on the meadow. Here is how to start solo or gather friends in Maks Kurilenko’s game."
+    },
+    "sections": [
+      {
+        "heading": {
+          "ru": "Игра, которую можно сразу попробовать",
+          "en": "A game you can try straight away"
+        },
+        "paragraphs": {
+          "ru": [
+            "Baattle Royale — бесплатная онлайн-игра, которая запускается в браузере без скачивания. На GPU её можно открыть кнопкой «Играть здесь» на карточке проекта или ниже на этой странице.",
+            "Задача матча — остаться последним бараном на лугу: таранить соперников, прятаться под деревьями и избегать косилки. На сайте есть соло и командные режимы."
+          ],
+          "en": [
+            "Baattle Royale is a free online game that runs in a browser without a download. On GPU, use Play here on the project card or below on this page.",
+            "The goal is to be the last ram on the meadow: ram opponents, hide under trees and avoid the mower. The game offers solo and team modes."
+          ]
+        }
+      },
+      {
+        "heading": {
+          "ru": "Как начать",
+          "en": "How to get started"
+        },
+        "steps": {
+          "ru": [
+            "Открой игру и выбери имя и внешний вид своего барана.",
+            "Нажми Quick play и выбери Solo, Duo, Trio или Squad.",
+            "Для игры с друзьями создай комнату через Create room и передай им код. Они смогут войти через Join."
+          ],
+          "en": [
+            "Open the game and choose a name and appearance for your ram.",
+            "Select Quick play, then choose Solo, Duo, Trio or Squad.",
+            "To play with friends, create a room using Create room and share its code. Friends can enter it using Join."
+          ]
+        }
+      },
+      {
+        "heading": {
+          "ru": "Что проверили на GPU",
+          "en": "What we checked on GPU"
+        },
+        "paragraphs": {
+          "ru": [
+            "30 октября 2026 года редакция GPU открыла игру во встроенном окне, выбрала Quick play → Solo и дошла до игрового поля с разминкой перед матчем. Скриншот ниже сделан при этой проверке.",
+            "Встроенное окно загружает оригинальную игру с baattleroyale.com. После закрытия игра выгружается. Отдельная ссылка на сайт разработчика остаётся рядом."
+          ],
+          "en": [
+            "On 30 October 2026, GPU’s editorial team opened the embedded game, selected Quick play → Solo and reached the playing field with its pre-match warm-up. The screenshot below comes from that check.",
+            "The embedded window loads the original game from baattleroyale.com. Closing it unloads the game. A separate link to the developer’s website remains available."
+          ]
+        }
+      }
+    ],
+    "source_note": {
+      "ru": "Редакционный материал GPU по публичному описанию игры и собственной проверке демо. Автор игры — Maks Kurilenko.",
+      "en": "An editorial guide by GPU based on the public game description and our own demo check. The game is made by Maks Kurilenko."
+    },
+    "source_url": "https://baattleroyale.com/",
+    "demo_image": "/workshop/baattle-demo.png",
+    "image_alt": {
+      "ru": "Baattle Royale: разминка перед соло-матчем во встроенном окне GPU",
+      "en": "Baattle Royale: the solo pre-match warm-up inside GPU’s embedded window"
+    },
+    "post": {
+      "ru": "Королевская битва, но ты — баран 🐏\n\nBaattle Royale от Maks Kurilenko: тарань соперников, убегай от косилки и оставайся последним на лугу. Бесплатно, в браузере, соло или с друзьями.\n\nНа GPU теперь можно сыграть прямо в попапе. Собрали короткую инструкцию и показали демо:",
+      "en": "A battle royale, but you’re a ram 🐏\n\nBaattle Royale by Maks Kurilenko: ram opponents, dodge a lawn mower and be the last one standing. Free, in your browser, solo or with friends.\n\nYou can now play it right inside GPU. Here’s a quick guide and a demo:"
+    }
+  },
+  {
+    "id": "callimate",
+    "project_id": "callimate",
+    "date_published": "2026-10-30T01:10:39+04:00",
+    "title": {
+      "ru": "CalliMate: от образца иероглифа к практике на бумаге",
+      "en": "CalliMate: from a Chinese character reference to practice on paper"
+    },
+    "summary": {
+      "ru": "iOS-приложение WoolMate / CalliMate для китайской каллиграфии: находишь иероглиф, изучаешь образцы и возвращаешься к письму на бумаге.",
+      "en": "An iOS app by WoolMate / CalliMate for Chinese calligraphy: find a character, study references and return to practising on paper."
+    },
+    "sections": [
+      {
+        "heading": {
+          "ru": "Когда пригодится",
+          "en": "When it is useful"
+        },
+        "paragraphs": {
+          "ru": [
+            "Во время занятий каллиграфией может понадобиться образец конкретного иероглифа. CalliMate собирает поиск иероглифов, образцы написания и материалы для повторной практики в одном iOS-приложении.",
+            "Его можно использовать как справочник рядом с бумагой: рассмотреть форму знака, попробовать написать и вернуться к образцу. Это пример сценария использования, а не обещание результата обучения."
+          ],
+          "en": [
+            "During calligraphy practice, you may need a reference for a particular Chinese character. CalliMate brings character search, copybook references and practice materials together in an iOS app.",
+            "One possible routine is to keep the app beside your paper: examine the character’s shape, try writing it and return to the reference. This is an example workflow, not a promise of learning outcomes."
+          ]
+        }
+      },
+      {
+        "heading": {
+          "ru": "Простой сценарий занятия",
+          "en": "A simple practice routine"
+        },
+        "steps": {
+          "ru": [
+            "Открой CalliMate по ссылке в App Store и проверь совместимость со своим устройством. В листинге указана iOS 16.0 или новее.",
+            "Найди иероглиф, который хочешь потренировать, и изучи образцы.",
+            "Попробуй написать его на бумаге, затем сравни форму с образцом и повтори упражнение."
+          ],
+          "en": [
+            "Open CalliMate in the App Store and check device compatibility. The listing specifies iOS 16.0 or later.",
+            "Find a character you want to practise and study its references.",
+            "Try writing it on paper, compare its shape with the reference and repeat the exercise."
+          ]
+        }
+      },
+      {
+        "heading": {
+          "ru": "Источник материала",
+          "en": "Source for this guide"
+        },
+        "paragraphs": {
+          "ru": [
+            "Функции приложения описаны по публичному листингу App Store и заявке WoolMate / CalliMate. Материал подготовила редакция GPU; это не интервью с автором и не обзор после занятий в приложении.",
+            "На странице проекта есть прямая ссылка в App Store. По ней же можно посмотреть актуальные условия доступа и информацию разработчика."
+          ],
+          "en": [
+            "The app’s features are described using its public App Store listing and the submission by WoolMate / CalliMate. This is a GPU editorial guide, rather than a maker interview or a hands-on practice review.",
+            "The project page links directly to the App Store, where you can check current access terms and the developer’s information."
+          ]
+        }
+      }
+    ],
+    "source_note": {
+      "ru": "Редакционный материал GPU по описанию разработчика. Создали приложение: WoolMate / CalliMate.",
+      "en": "A GPU editorial guide based on the developer’s description. App maker: WoolMate / CalliMate."
+    },
+    "source_url": "https://apps.apple.com/us/app/callimate/id6787850240",
+    "post": {
+      "ru": "От экрана — обратно к бумаге ✍️\n\nCalliMate от WoolMate / CalliMate — iOS-приложение для китайской каллиграфии. Находишь иероглиф, изучаешь образцы и пробуешь написать сам.\n\nСобрали короткое знакомство с проектом и пример занятия:",
+      "en": "From the screen back to paper ✍️\n\nCalliMate by WoolMate / CalliMate is an iOS reference app for Chinese calligraphy. Find a character, study copybook examples and practise writing it yourself.\n\nHere’s a short introduction and an example practice routine:"
+    }
+  }
+]

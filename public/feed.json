@@ -17,7 +17,25 @@
         "https://gpu.social/workshop/projects/callimate/",
         "https://gpu.social/workshop/projects/baattle-royale/"
       ],
-      "content_text": "CalliMate от WoolMate / CalliMate — приложение для китайской каллиграфии на iOS. Baattle Royale от Maks Kurilenko — бесплатная браузерная битва баранов, которую можно открыть прямо на GPU."
+      "stories": [
+        {
+          "url": "https://gpu.social/workshop/stories/baattle-royale/",
+          "url_en": "https://gpu.social/en/stories/baattle-royale/",
+          "title": "Baattle Royale: как сыграть в битву баранов прямо в браузере",
+          "title_en": "Baattle Royale: how to play a battle royale of rams in your browser"
+        },
+        {
+          "url": "https://gpu.social/workshop/stories/callimate/",
+          "url_en": "https://gpu.social/en/stories/callimate/",
+          "title": "CalliMate: от образца иероглифа к практике на бумаге",
+          "title_en": "CalliMate: from a Chinese character reference to practice on paper"
+        }
+      ],
+      "story_urls": [
+        "https://gpu.social/workshop/stories/baattle-royale/",
+        "https://gpu.social/workshop/stories/callimate/"
+      ],
+      "content_text": "CalliMate от WoolMate / CalliMate — приложение для китайской каллиграфии на iOS. Baattle Royale от Maks Kurilenko — бесплатная браузерная битва баранов, которую можно открыть прямо на GPU.\nhttps://gpu.social/workshop/stories/baattle-royale/\nhttps://gpu.social/workshop/stories/callimate/"
     },
     {
       "id": "gpu-new-projects-2026-10-24",
@@ -33,6 +51,8 @@
         "https://gpu.social/workshop/projects/weekly-menu/",
         "https://gpu.social/workshop/projects/aufix/"
       ],
+      "stories": [],
+      "story_urls": [],
       "content_text": "Очистка метаданных видео и Меню на неделю от @yuka_k, а также Aufix от Максима — расходы, обслуживание и документы личных авто и автопарков."
     },
     {
@@ -56,6 +76,8 @@
           "url": "https://www.linkedin.com/posts/yuka-kust-b7964097_four-new-projects-from-the-gpu-community-share-7517925955202424832-l2FG/"
         }
       ],
+      "stories": [],
+      "story_urls": [],
       "content_text": "Наш день — свадебные приглашения и список гостей; Bayun.ai — аналитика клиентских разговоров для бизнеса; Grabster — карточки слов из видео на Mac; Shelter 12 — игра в бункер для компании. Пробуйте и делитесь впечатлениями с авторами.\nLinkedIn: https://www.linkedin.com/posts/yuka-kust-b7964097_four-new-projects-from-the-gpu-community-share-7517925955202424832-l2FG/"
     },
     {
@@ -67,6 +89,8 @@
       "summary_en": "GPU is our shared home: projects, PEOPLE, and new ways to participate. Bring your project — we’ll spread the word together.",
       "url": "https://gpu.social/workshop/news/gpu-expedition-2026-10-01/",
       "url_en": "https://gpu.social/en/news/gpu-expedition-2026-10-01/",
+      "stories": [],
+      "story_urls": [],
       "content_text": "GPU становится нашим общим местом: проекты, PEOPLE и новые способы участвовать. Приноси своё — будем продвигать вместе."
     }
   ]

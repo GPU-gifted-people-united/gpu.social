@@ -292,3 +292,12 @@ label small{display:block;margin-top:8px;font-size:12px;font-weight:400;color:va
 .chip a{text-decoration:none;color:inherit}
 .chip a:hover{text-decoration:underline}
 @media(max-width:640px){.category-filters{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:8px}.category-filters .filter{flex-shrink:0}.category-page .search{width:100%}}
+
+.story-body{max-width:800px;margin:40px 0}
+.story-body h2{font-size:clamp(24px,4vw,34px);margin:36px 0 18px}
+.story-body p,.story-body li{font-size:18px;line-height:1.75;color:var(--muted)}
+.story-body p{margin:0 0 18px}.story-body ol{padding-left:26px}.story-body li{padding-left:8px;margin-bottom:12px}
+.story-body figure{margin:30px 0}.story-body img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:14px}
+.story-body figcaption,.story-body .story-source{font-size:14px;color:var(--muted);line-height:1.6;margin-top:12px}
+.story-page .actions{margin:28px 0}
+.story-list .update{display:block}.story-list .update h2{font-size:26px;margin-bottom:14px}.story-list .update p{color:var(--muted);max-width:800px}

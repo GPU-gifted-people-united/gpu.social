@@ -123,16 +123,25 @@ for (const link of document.querySelectorAll('a[data-category]')) link.addEventL
   event.preventDefault(); filter = link.dataset.category; render();
 });
 $('#search')?.addEventListener('input', render);
+const defaultSubmissionConsent = form.querySelector('.consent span').textContent;
 function openForm(kind, project) {
   form.reset(); form.hidden = false; $('#success').hidden = true; $('#form-error').textContent = '';
   form.elements.kind.value = kind; form.elements.project_id.value = project?.id || '';
-  const isProject = kind === 'project', revive = kind === 'revive', contact = kind === 'contact', linked = revive || contact;
+  const isStory = kind === 'story', isProject = kind === 'project' || isStory, revive = kind === 'revive', contact = kind === 'contact', linked = revive || contact;
   $('#dialog-title').textContent = contact ? tr('Связаться с разработчиками') + ' — ' + project.title : revive ? tr(project.status === 'development' ? 'Попробовать ' : 'Вернуть ') + project.title : tr(isProject ? 'Добавить свой проект' : 'Какой вещи не хватает?');
   $('#dialog-intro').textContent = tr(contact ? 'Расскажи, что нужно твоему бизнесу. Команда мастерской рассмотрит запрос и поможет связаться с разработчиками.' : revive ? (project.status === 'development' ? 'Проект ещё в разработке. Расскажи, что ты хотел бы попробовать. Сохраним твой интерес к тестированию.' : 'Расскажи, для чего тебе нужен этот проект. Мы сохраним запрос, но не обещаем сроков возвращения.') : isProject ? 'Работающий, незаконченный или уже остановленный — расскажи, чем он может быть полезен.' : 'Опиши реальную ситуацию. Сначала посмотрим, нет ли уже подходящего решения.');
   $('#title-field').hidden = linked; form.elements.title.required = !linked;
   $('#author-field').hidden = !isProject; form.elements.author.required = isProject;
   $('#url-field').hidden = !isProject;
   form.elements.description.placeholder = tr(contact ? 'Какая задача у вашего бизнеса и что хотите обсудить с разработчиками?' : isProject ? 'Что делает проект, кому нужен и работает ли сейчас?' : 'Что нужно сделать и в какой ситуации это пригодится?');
+  form.querySelector('.consent span').textContent = defaultSubmissionConsent;
+  if (isStory) {
+    $('#dialog-title').textContent = english ? 'Tell your project’s story' : 'Расскажи историю проекта';
+    $('#dialog-intro').textContent = english ? 'What problem did you solve, how can people try it, and what did you learn? Add a demo link if you have one. We will review the story before publishing.' : 'Какую задачу ты решал, как попробовать проект и что получилось? Добавь ссылку на демо, если есть. Перед публикацией мы посмотрим материал.';
+    form.elements.title.placeholder = english ? 'Project name or story title' : 'Название проекта или истории';
+    form.elements.description.placeholder = english ? 'The problem → your solution → a practical example or result. Add a demo link.' : 'Задача → твоё решение → пример использования или результат. Добавь ссылку на демо.';
+    form.querySelector('.consent span').textContent = english ? 'I agree to have this story and my contact stored for review. The story and maker name may be published after review; my contact stays private.' : 'Согласен на хранение истории и контакта для редакционной проверки. История и имя автора могут быть опубликованы после проверки; контакт останется приватным.';
+  } else form.elements.title.placeholder = english ? 'What is your idea?' : 'Какую вещь ты задумал?';
   modal.showModal();
 }
 for (const button of document.querySelectorAll('[data-kind]')) button.onclick = () => openForm(button.dataset.kind);
@@ -191,6 +200,15 @@ if ($('#updates')) fetch('/workshop/feed.json').then(r => { if (!r.ok) throw Err
         if (target.protocol !== 'https:' || !['www.linkedin.com', 'linkedin.com', 't.me'].includes(target.hostname)) continue;
         const support = el('a', 'text-button', (english ? 'Support on ' : 'Поддержать в ') + post.platform + ' ↗');
         support.href = target.href; support.target = '_blank'; support.rel = 'noopener noreferrer'; support.dataset.supportPost = ''; actions.append(support);
+      } catch {}
+    }
+    for (const story of item.stories || []) {
+      try {
+        const target = new URL(story.url);
+        if (target.origin !== 'https://gpu.social' || !/^\/workshop\/stories\/[a-z0-9-]+\/$/.test(target.pathname)) continue;
+        const a = el('a', 'text-button', (english ? story.title_en : story.title) + ' →');
+        a.href = english ? target.pathname.replace('/workshop/', '/en/') : target.pathname;
+        actions.append(a);
       } catch {}
     }
     row.append(date, body, actions); $('#updates').append(row);

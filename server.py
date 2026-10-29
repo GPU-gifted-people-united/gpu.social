@@ -91,7 +91,7 @@ class Handler(BaseHTTPRequestHandler):
    for row in rows:public_pages.decorate_category(sys.modules[__name__],row,path.startswith('/en/'))
    return self.send(200,rows)
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
-  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/window.jpg':'window.jpg',BASE+'/rainbow.jpg':'rainbow.jpg',BASE+'/road.jpg':'road.jpg',BASE+'/community.jpg':'community.jpg',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}
+  routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/baattle-demo.png':'baattle-demo.png',BASE+'/window.jpg':'window.jpg',BASE+'/rainbow.jpg':'rainbow.jpg',BASE+'/road.jpg':'road.jpg',BASE+'/community.jpg':'community.jpg',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}
   f=routes.get(path)
   if not f:return self.send(404,{'error':'Страница не найдена'})
   types={'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','svg':'image/svg+xml','json':'application/feed+json; charset=utf-8','xml':'application/rss+xml; charset=utf-8','png':'image/png','jpg':'image/jpeg'}
@@ -109,14 +109,14 @@ class Handler(BaseHTTPRequestHandler):
    if not isinstance(obj,dict):raise ValueError()
    if obj.get('website'):return self.send(400,{'error':'Не удалось отправить форму.'})
    vals={k:str(obj.get(k,'')).strip() for k in ['kind','project_id','title','description','contact','url','author']}
-   if vals['kind'] not in ('idea','project','revive','contact'):raise ValueError()
+   if vals['kind'] not in ('idea','project','revive','contact','story'):raise ValueError()
    if not 10<=len(vals['description'])<=3000 or not 3<=len(vals['contact'])<=180:raise ValueError()
    if not (re.fullmatch(r'@[A-Za-z0-9_]{5,32}',vals['contact']) or re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',vals['contact']) or valid_linkedin(vals['contact'])):
     return self.send(400,{'error':'Укажите email, Telegram @username или ссылку на профиль LinkedIn.'})
    if len(vals['title'])>120 or len(vals['author'])>100 or len(vals['url'])>1000:raise ValueError()
    if vals['url'] and not valid_url(vals['url']):return self.send(400,{'error':'Ссылка должна начинаться с https:// или http://.'})
    if vals['kind'] not in ('revive','contact') and len(vals['title'])<3:raise ValueError()
-   if vals['kind']=='project' and len(vals['author'])<2:raise ValueError()
+   if vals['kind'] in ('project','story') and len(vals['author'])<2:raise ValueError()
    if obj.get('consent') is not True:return self.send(400,{'error':'Нужно согласие на обработку заявки.'})
   except (ValueError,TypeError,json.JSONDecodeError):return self.send(400,{'error':'Проверьте обязательные поля и длину описания.'})
   now=int(time.time()); sid=str(uuid.uuid4())

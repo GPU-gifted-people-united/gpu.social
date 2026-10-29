@@ -35,3 +35,15 @@ GPU is our shared home. Pick a useful change, open a pull request, and explain w
 Projects remain their authors' property. The site's code licence is not yet selected; do not assume permission to reuse it beyond contributions. Major changes are discussed together. Never commit databases, contact details, private submissions, credentials or deployment keys.
 
 Main requires maintainer/code-owner review and CI. After checks on an accepted main commit pass, the Deploy workflow sends an archive using a key restricted to the server release receiver. The receiver validates paths, backs up SQLite, switches releases and checks health; it restores the previous release on health failure. Deployment keys and private data stay outside the repository.
+
+## Share your project's story
+
+Use “Tell your story” at https://gpu.social/en/stories/ (Russian: /workshop/stories/).
+Explain the problem, what you built, how someone can try it, and what you learned.
+Include a demo link or screenshot when possible. Give real examples; identify estimates as estimates.
+Your submission and reply contact stay private during review. Nothing is published automatically.
+
+Maintainers receive these as kind=story in the existing private inbox. Review the maker's
+account before adding it to public/stories.json, with RU/EN text and public source/demo links.
+Keep the original meaning of quotes, get permission for private screenshots, and credit the maker.
+Editorial guides should use GPU as their article author rather than impersonating a project creator.
