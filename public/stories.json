@@ -99,11 +99,11 @@
         "paragraphs": {
           "ru": [
             "Во время занятий каллиграфией может понадобиться образец конкретного иероглифа. CalliMate собирает поиск иероглифов, образцы написания и материалы для повторной практики в одном iOS-приложении.",
-            "Его можно использовать как справочник рядом с бумагой: рассмотреть форму знака, попробовать написать и вернуться к образцу. Это пример сценария использования, а не обещание результата обучения."
+            "Его можно использовать как справочник рядом с бумагой: рассмотреть форму знака, попробовать написать и вернуться к образцу."
           ],
           "en": [
             "During calligraphy practice, you may need a reference for a particular Chinese character. CalliMate brings character search, copybook references and practice materials together in an iOS app.",
-            "One possible routine is to keep the app beside your paper: examine the character’s shape, try writing it and return to the reference. This is an example workflow, not a promise of learning outcomes."
+            "One possible routine is to keep the app beside your paper: examine the character’s shape, try writing it and return to the reference."
           ]
         }
       },
@@ -132,11 +132,11 @@
         },
         "paragraphs": {
           "ru": [
-            "Функции приложения описаны по публичному листингу App Store и заявке WoolMate / CalliMate. Материал подготовила редакция GPU; это не интервью с автором и не обзор после занятий в приложении.",
+            "Функции приложения описаны по публичному листингу App Store и заявке WoolMate / CalliMate. Материал подготовила редакция GPU на основе этих источников.",
             "На странице проекта есть прямая ссылка в App Store. По ней же можно посмотреть актуальные условия доступа и информацию разработчика."
           ],
           "en": [
-            "The app’s features are described using its public App Store listing and the submission by WoolMate / CalliMate. This is a GPU editorial guide, rather than a maker interview or a hands-on practice review.",
+            "The app’s features are described using its public App Store listing and the submission by WoolMate / CalliMate. GPU prepared this editorial guide from those sources.",
             "The project page links directly to the App Store, where you can check current access terms and the developer’s information."
           ]
         }
