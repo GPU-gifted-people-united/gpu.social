@@ -80,6 +80,10 @@ function render() {
     const feedback = el('div', 'share-feedback'); feedback.setAttribute('role', 'status');
     share.onclick = () => shareProject({title: p.title, text: p.title + '\n' + p.description, url: 'https://gpu.social' + detail.getAttribute('href')}, feedback);
     const hasWebsite = p.status === 'live' && /^https?:\/\//.test(p.url);
+    if (p.id === 'baattle-royale' && p.status === 'live') {
+      const play = el('button', 'card-action', english ? 'Play here ▷' : 'Играть здесь ▷');
+      play.type = 'button'; play.dataset.playGame = ''; bottom.append(play);
+    }
     if (hasWebsite) {
       const link = el('a', 'card-action', tr(p.category === 'B2B' ? 'Перейти на сайт' : p.id === 'actor-replacement-studio' ? 'Хочу попробовать' : 'Посмотреть'));
       link.href = p.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.dataset.projectOutbound = '';
@@ -243,17 +247,34 @@ if ($('#share-news')) $('#share-news').onclick = async () => {
   catch { field.closest('details').open = true; field.focus(); field.select(); status.textContent = english ? 'Select and copy the post.' : 'Выделите и скопируйте пост.'; }
 };
 
-// Load the external game only after an explicit click; closing stops its audio/network.
-if ($('#play-here')) {
-  const dialog = $('#game-dialog'), container = $('#game-container');
-  $('#play-here').onclick = () => {
-    const frame = document.createElement('iframe');
-    frame.title = 'Baattle Royale';
-    frame.src = 'https://baattleroyale.com/';
-    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-pointer-lock');
-    frame.allow = 'fullscreen; gamepad';
-    container.replaceChildren(frame);
-    dialog.showModal();
-  };
-  dialog.addEventListener('close', () => container.replaceChildren());
-}
+// Share one opt-in preview between catalogue cards and the project page.
+document.addEventListener('click', event => {
+  if (!event.target.closest('[data-play-game], #play-here')) return;
+  let dialog = $('#game-dialog');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'game-dialog'; dialog.className = 'game-dialog';
+    dialog.setAttribute('aria-labelledby', 'game-title');
+    const top = el('div', 'dialog-top'), title = el('h2', '', 'Baattle Royale');
+    title.id = 'game-title';
+    const close = el('button', 'close', '×'); close.type = 'button';
+    close.setAttribute('aria-label', english ? 'Close game' : 'Закрыть игру');
+    close.onclick = () => dialog.close(); top.append(title, close);
+    const note = el('p', 'muted', english ? 'A game by Maks Kurilenko. ' : 'Игра Maks Kurilenko. ');
+    const link = el('a', '', english ? 'Open website ↗' : 'Открыть сайт ↗');
+    link.href = 'https://baattleroyale.com/'; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    note.append(link);
+    const container = el('div', ''); container.id = 'game-container';
+    dialog.append(top, note, container); document.body.append(dialog);
+  }
+  const container = $('#game-container');
+  if (!dialog.dataset.initialized) {
+    dialog.addEventListener('close', () => container.replaceChildren());
+    dialog.dataset.initialized = 'true';
+  }
+  const frame = document.createElement('iframe');
+  frame.title = 'Baattle Royale'; frame.src = 'https://baattleroyale.com/';
+  frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-pointer-lock');
+  frame.allow = 'fullscreen; gamepad';
+  container.replaceChildren(frame); dialog.showModal();
+});

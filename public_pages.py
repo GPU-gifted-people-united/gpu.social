@@ -66,6 +66,7 @@ def card(p,en=False):
  if p['status']=='live' and urlparse(p['url']).scheme in ('http','https'):
   action=f'<a class="card-action" data-project-outbound href="{esc(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Visit website" if en else "Перейти на сайт"} ↗</a>'
  elif p['category']=='B2B':action=f'<a class="card-action" href="{href}">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</a>'
+ if p['id']=='baattle-royale' and p['status']=='live':action=f'<button type="button" class="card-action" data-play-game>{"Play here" if en else "Играть здесь"} ▷</button>'+action
  return f'<article class="card k-{kind}"><div class="card-meta"><span class="card-tags"><span class="chip">{esc(p["category"])}</span></span><span class="author">{esc(p["author"])}</span></div><h3><a href="{href}">{esc(p["title"])}</a></h3><p class="card-desc">{esc(p["description"])}</p><div class="card-bottom">{action}</div></article>'
 
 def news_card(item,en=False):
