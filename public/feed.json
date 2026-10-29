@@ -5,6 +5,21 @@
   "feed_url": "https://gpu.social/workshop/feed.json",
   "items": [
     {
+      "id": "gpu-new-projects-2026-10-30",
+      "date_published": "2026-10-30T00:43:00+04:00",
+      "title": "Каллиграфия и королевская битва баранов",
+      "title_en": "Chinese calligraphy and a battle royale of rams",
+      "summary": "CalliMate от WoolMate / CalliMate — приложение для китайской каллиграфии на iOS. Baattle Royale от Maks Kurilenko — бесплатная браузерная битва баранов, которую можно открыть прямо на GPU.",
+      "summary_en": "CalliMate by WoolMate / CalliMate helps you practise Chinese calligraphy on iOS. Baattle Royale by Maks Kurilenko is a free browser battle royale of rams — playable right here on GPU.",
+      "url": "https://gpu.social/workshop/news/gpu-new-projects-2026-10-30/",
+      "url_en": "https://gpu.social/en/news/gpu-new-projects-2026-10-30/",
+      "project_urls": [
+        "https://gpu.social/workshop/projects/callimate/",
+        "https://gpu.social/workshop/projects/baattle-royale/"
+      ],
+      "content_text": "CalliMate от WoolMate / CalliMate — приложение для китайской каллиграфии на iOS. Baattle Royale от Maks Kurilenko — бесплатная браузерная битва баранов, которую можно открыть прямо на GPU."
+    },
+    {
       "id": "gpu-new-projects-2026-10-24",
       "date_published": "2026-10-24T06:37:35Z",
       "title": "Ещё три проекта в GPU",

@@ -242,3 +242,18 @@ if ($('#share-news')) $('#share-news').onclick = async () => {
   try { await navigator.clipboard.writeText(field.value); status.textContent = english ? 'Post copied.' : 'Пост скопирован.'; }
   catch { field.closest('details').open = true; field.focus(); field.select(); status.textContent = english ? 'Select and copy the post.' : 'Выделите и скопируйте пост.'; }
 };
+
+// Load the external game only after an explicit click; closing stops its audio/network.
+if ($('#play-here')) {
+  const dialog = $('#game-dialog'), container = $('#game-container');
+  $('#play-here').onclick = () => {
+    const frame = document.createElement('iframe');
+    frame.title = 'Baattle Royale';
+    frame.src = 'https://baattleroyale.com/';
+    frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-pointer-lock');
+    frame.allow = 'fullscreen; gamepad';
+    container.replaceChildren(frame);
+    dialog.showModal();
+  };
+  dialog.addEventListener('close', () => container.replaceChildren());
+}

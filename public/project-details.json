@@ -226,5 +226,35 @@
       "ru": "Связь с разработчиками через заявку GPU; публичной ссылки на приложение нет.",
       "en": "Contact the developers through GPU; no public application URL is listed."
     }
+  },
+  "callimate": {
+    "updated": "2026-10-30",
+    "platforms": {
+      "ru": "iOS 16.0+ (App Store).",
+      "en": "iOS 16.0+ (App Store)."
+    },
+    "audience": {
+      "ru": "Тем, кто изучает китайскую каллиграфию.",
+      "en": "People practising Chinese calligraphy."
+    },
+    "example": {
+      "ru": "Найдите иероглиф, изучите образцы и попробуйте написать его на бумаге.",
+      "en": "Look up a character, study copybook references, then practise on paper."
+    }
+  },
+  "baattle-royale": {
+    "updated": "2026-10-30",
+    "platforms": {
+      "ru": "Web, в браузере, без скачивания.",
+      "en": "Web browser, no download."
+    },
+    "audience": {
+      "ru": "Любителям коротких онлайн-игр соло и с друзьями.",
+      "en": "People who enjoy quick online games solo or with friends."
+    },
+    "example": {
+      "ru": "Тараньте соперников и убегайте от косилки, чтобы остаться последним бараном на лугу.",
+      "en": "Ram opponents and outrun the mower to be the last ram on the meadow."
+    }
   }
 }
