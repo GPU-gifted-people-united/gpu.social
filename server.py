@@ -88,6 +88,7 @@ class Handler(BaseHTTPRequestHandler):
    with connect() as d: rows=[dict(r) for r in d.execute("SELECT * FROM projects WHERE status IN ('live','archived','development') ORDER BY created,id")]
    if path.startswith('/en/'):
     for row in rows:localize_english_project(row)
+   for row in rows:public_pages.decorate_category(sys.modules[__name__],row,path.startswith('/en/'))
    return self.send(200,rows)
   if path==BASE+'/api/health': return self.send(200,{'ok':True})
   routes={'/':'index.html','/en':'index-en.html','/en/':'index-en.html',BASE:'index.html',BASE+'/':'index.html',BASE+'/style.css':'style.css',BASE+'/app.js':'app.js',BASE+'/analytics.js':'analytics.js',BASE+'/favicon.svg':'favicon.svg',BASE+'/expedition.svg':'expedition.svg',BASE+'/social.png':'social.png',BASE+'/window.jpg':'window.jpg',BASE+'/rainbow.jpg':'rainbow.jpg',BASE+'/road.jpg':'road.jpg',BASE+'/community.jpg':'community.jpg',BASE+'/feed.json':'feed.json',BASE+'/feed.xml':'feed.xml',BASE+'/people.json':'people.json',BASE+'/people':'people.html',BASE+'/people/':'people.html','/en/people/':'people-en.html'}

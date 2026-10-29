@@ -21,3 +21,9 @@ document.addEventListener('click', event => {
   const name = link.hasAttribute('data-support-post') ? 'support_post_click' : link.hasAttribute('data-project-outbound') ? 'project_website_click' : 'newsletter_open';
   gtag('event', name, {language:document.documentElement.lang});
 });
+
+document.addEventListener('click', event => {
+  if (!(event.target instanceof Element)) return;
+  const link = event.target.closest('a[data-category]');
+  if (link) gtag('event', 'category_filter_click', {language:document.documentElement.lang,category_id:link.dataset.category});
+});

@@ -40,7 +40,7 @@ const copy = {
 const tr = value => english ? (copy[value] || value) : value;
 const $ = selector => document.querySelector(selector);
 const cards = $('#cards'), modal = $('#submit-dialog'), form = $('#submission');
-let projects = [], filter = 'all';
+let projects = [], filter = $('#main')?.dataset.category || (location.hash === '#b2b' ? 'business' : 'all');
 function el(tag, cls, value) {
   const node = document.createElement(tag);
   if (cls) node.className = cls;
@@ -49,24 +49,25 @@ function el(tag, cls, value) {
 }
 function render() {
   cards.replaceChildren();
-  const b2bCards = $('#b2b-cards'); b2bCards.replaceChildren();
   const q = $('#search').value.trim().toLocaleLowerCase(english ? 'en' : 'ru');
-  const rows = projects.filter(p => (filter === 'all' || p.status === filter) &&
-    [p.title, p.description, p.category, p.author].join(' ').toLocaleLowerCase(english ? 'en' : 'ru').includes(q));
-  let shownFilters = 0;
-  for (const button of document.querySelectorAll('[data-filter]')) {
-    const kind = button.dataset.filter;
-    button.hidden = kind !== 'all' && !projects.some(p => p.status === kind);
-    if (!button.hidden) shownFilters++;
-  }
-  $('.filters').hidden = shownFilters < 3;
+  const rows = projects.filter(p => (filter === 'all' || p.category_id === filter) &&
+    [p.title, p.description, p.category_label, p.category, p.author].join(' ').toLocaleLowerCase(english ? 'en' : 'ru').includes(q));
   $('.search').hidden = !projects.length;
-  $('#b2b').hidden = !rows.some(p => p.category === 'B2B');
+  for (const link of document.querySelectorAll('[data-category]')) {
+    if (!link.matches('a')) continue;
+    const selected = link.dataset.category === filter;
+    link.classList.toggle('selected', selected);
+    link.setAttribute('aria-current', String(selected));
+  }
+  if ($('#catalog-count')) $('#catalog-count').textContent = (english ? 'Found: ' : 'Найдено: ') + rows.length;
   for (const p of rows) {
     const kind = p.category === 'B2B' ? 'business' : p.id === 'pinock-space' ? 'space' : p.id === 'aiconic-space' ? 'text' : p.id === 'actor-replacement-studio' ? 'video' : p.id === 'codex-limits' ? 'tools' : 'finance';
     const card = el('article', 'card k-' + kind);
     const meta = el('div', 'card-meta');
-    const tags = el('span', 'card-tags'); tags.append(el('span', 'chip', p.category)); meta.append(tags);
+    const tags = el('span', 'card-tags'), chip = el('span', 'chip');
+    const categoryLink = el('a', '', p.category_label || p.category);
+    categoryLink.href = (english ? '/en/categories/' : '/workshop/categories/') + p.category_id + '/';
+    chip.append(categoryLink); tags.append(chip); meta.append(tags);
     const status = p.id === 'price-monitor' && p.status === 'live' ? 'Внедрён' : p.status === 'development' ? 'В разработке' : p.status === 'archived' ? 'В архиве' : '';
     if (status) tags.append(el('span', 'status ' + (p.status === 'archived' ? 'archived' : ''), tr(status)));
     const title = el('h3', '');
@@ -96,7 +97,7 @@ function render() {
       const button = el('button', 'card-action', tr(p.status === 'development' ? 'Хочу попробовать' : 'Мне это нужно'));
       button.type = 'button'; button.append(el('span', '', '↗')); button.onclick = () => openForm('revive', p); bottom.append(button);
     }
-    bottom.append(share); card.append(bottom, feedback); (p.category === 'B2B' ? b2bCards : cards).append(card);
+    bottom.append(share); card.append(bottom, feedback); cards.append(card);
   }
   if (!projects.length) {
     const empty = el('div', 'empty');
@@ -109,20 +110,18 @@ async function load() {
     const response = await fetch(english ? '/en/api/projects' : '/workshop/api/projects');
     if (!response.ok) throw Error();
     projects = await response.json(); render();
-    const target = document.getElementById(location.hash.slice(1));
+    const target = location.hash === '#b2b' ? $('#projects') : document.getElementById(location.hash.slice(1));
     if (['#projects', '#b2b', '#participate', '#create', '#community'].includes(location.hash) && target && !target.hidden) target.scrollIntoView();
   } catch {
     const message = el('p', 'empty', tr('Не удалось загрузить каталог. '));
     const retry = el('button', 'retry', tr('Попробовать ещё раз')); retry.onclick = load; message.append(retry); if (!cards.querySelector('article')) cards.replaceChildren(message); else cards.append(message);
   }
 }
-for (const button of document.querySelectorAll('[data-filter]')) button.onclick = () => {
-  filter = button.dataset.filter;
-  for (const item of document.querySelectorAll('[data-filter]')) {
-    item.classList.toggle('selected', item === button); item.setAttribute('aria-pressed', String(item === button));
-  }
-  render();
-};
+for (const link of document.querySelectorAll('a[data-category]')) link.addEventListener('click', event => {
+  // Category pages keep normal links; homepage filters are enhanced in place.
+  if ($('#main').dataset.category || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0 || !projects.length) return;
+  event.preventDefault(); filter = link.dataset.category; render();
+});
 $('#search')?.addEventListener('input', render);
 function openForm(kind, project) {
   form.reset(); form.hidden = false; $('#success').hidden = true; $('#form-error').textContent = '';
