@@ -11,6 +11,8 @@ ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
 EN_PROJECTS={
+ 'callimate':('Learning','An iOS reference app for Chinese calligraphy: search characters, study copybook examples and organise practice before writing on paper.'),
+ 'baattle-royale':('Games','A free browser battle royale of rams. Ram opponents, hide under trees and outrun the mower. Play solo or team up with friends, without downloading.'),
  'video-metadata-cleaner':('Video', 'Removes C2PA provenance and editing metadata from videos without changing picture or sound. Removal of platform AI-info labels is not guaranteed.'),
  'weekly-menu':('Food', 'Generates a weekly meal plan within your budget, with breakfasts, lunches and dinners tailored to your household and preferences.'),
  'aufix':('B2B', 'Track expenses and manage a personal vehicle or business fleet: fuel, maintenance, reminders and documents in one place. Available on web, iOS and Android, with up to 500 vehicles depending on the plan.'),
@@ -74,7 +76,7 @@ class Handler(BaseHTTPRequestHandler):
   self.send_response(status); self.send_header('Content-Type',kind); self.send_header('Content-Length',str(len(data)))
   self.send_header('Cache-Control','no-store' if 'json' in kind else 'no-cache')
   self.send_header('X-Content-Type-Options','nosniff'); self.send_header('Referrer-Policy','strict-origin-when-cross-origin')
-  self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
+  self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://www.google.com; frame-src https://baattleroyale.com; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
   self.end_headers(); self.wfile.write(data)
  def do_GET(self):
   parsed=urlparse(self.path);path=parsed.path

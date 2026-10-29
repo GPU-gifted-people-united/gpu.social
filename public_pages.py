@@ -110,6 +110,10 @@ def project_page(app,p,en):
  action=''
  if p['status']=='live' and app.valid_url(p['url']):action=f'<a class="button" data-project-outbound href="{esc(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Visit website" if en else "Перейти на сайт"} ↗</a>'
  if p['category']=='B2B' or not action:action+=f'<button class="button ghost" id="project-contact">{("Contact the developers" if en else "Связаться с разработчиками") if p["category"]=="B2B" else ("I want to try it" if en else "Хочу попробовать")} ↗</button>'
+ demo=''
+ if p['id']=='baattle-royale' and p['status']=='live':
+  action=f'<button class="button" id="play-here">{"Play here" if en else "Играть здесь"} ▷</button>'+action
+  demo=f'<dialog id="game-dialog" class="game-dialog" aria-labelledby="game-title"><div class="dialog-top"><h2 id="game-title">Baattle Royale</h2><button class="close" type="button" data-close aria-label="{"Close game" if en else "Закрыть игру"}">×</button></div><p class="muted">{"A game by Maks Kurilenko. If it does not load, open the developer’s website." if en else "Игра Maks Kurilenko. Если не загрузится — открой сайт автора."} <a href="https://baattleroyale.com/" target="_blank" rel="noopener noreferrer">{"Open website" if en else "Открыть сайт"} ↗</a></p><div id="game-container"></div></dialog>'
  fields=json.loads((app.ROOT/'public/project-details.json').read_text()).get(p['id'],{})
  language='en' if en else 'ru';details=''
  labels={'audience':('Кому пригодится','Who it is for'),'example':('Пример использования','Example use'),'platforms':('Платформы','Platforms'),'access':('Условия доступа','Access')}
@@ -120,7 +124,7 @@ def project_page(app,p,en):
  related_html=''
  if related:related_html='<section class="project-updates"><h2>'+('Updates & community posts' if en else 'Новости и публикации')+'</h2>'+''.join(news_card(i,en) for i in related)+'</section>'
  updated=f'<p class="muted">{"Description updated" if en else "Описание обновлено"}: {esc(fields["updated"])}</p>' if fields.get('updated') else ''
- main=f'<main id="main" class="project-page" data-project-id="{esc(p["id"])}" data-project-title="{title}" data-project-status="{esc(p["status"])}" data-project-category="{category}"><a class="text-button" href="{"/en/" if en else "/"}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="project-facts">{details}</section>{updated}{related_html}{subscription_invite(en)}</main>'
+ main=f'<main id="main" class="project-page" data-project-id="{esc(p["id"])}" data-project-title="{title}" data-project-status="{esc(p["status"])}" data-project-category="{category}"><a class="text-button" href="{"/en/" if en else "/"}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="project-facts">{details}</section>{updated}{related_html}{subscription_invite(en)}{demo}</main>'
  schema={'@context':'https://schema.org','@type':'SoftwareApplication','name':p['title'],'description':p['description'],'url':SITE+project_url(p,en),'applicationCategory':p['category'],'author':{'@type':'Person','name':p['author']},'inLanguage':language}
  if fields.get('platforms',{}).get('en'):schema['operatingSystem']=fields['platforms']['en']
  if p['url']:schema['sameAs']=p['url']
