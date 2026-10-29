@@ -1,0 +1,118 @@
+[
+  {
+    "id": "content",
+    "label": {
+      "ru": "Контент",
+      "en": "Content"
+    },
+    "title": {
+      "ru": "Инструменты для создания контента",
+      "en": "Content creation tools"
+    },
+    "description": {
+      "ru": "Создавайте тексты, работайте с видео и голосом, очищайте метаданные. Проекты сообщества GPU с примерами применения и ссылками на авторов.",
+      "en": "Create text, work with video and voice, and clean video metadata. GPU community projects with practical examples and links to their makers."
+    },
+    "projects": [
+      "aiconic-space",
+      "actor-replacement-studio",
+      "video-metadata-cleaner"
+    ]
+  },
+  {
+    "id": "games",
+    "label": {
+      "ru": "Игры",
+      "en": "Games"
+    },
+    "title": {
+      "ru": "Браузерные игры и игры для компании",
+      "en": "Browser and party games"
+    },
+    "description": {
+      "ru": "Играйте в браузере или собирайте компанию с телефонами: королевская битва баранов Baattle Royale и игра в бункер Shelter 12.",
+      "en": "Play in your browser or gather friends with their phones: Baattle Royale, a battle royale of rams, and the bunker party game Shelter 12."
+    },
+    "projects": [
+      "baattle-royale",
+      "shelter-12"
+    ]
+  },
+  {
+    "id": "learning",
+    "label": {
+      "ru": "Обучение",
+      "en": "Learning"
+    },
+    "title": {
+      "ru": "Приложения для изучения языков и каллиграфии",
+      "en": "Language learning and calligraphy apps"
+    },
+    "description": {
+      "ru": "Сохраняйте слова из видео в карточки с Grabster или изучайте образцы китайской каллиграфии с CalliMate.",
+      "en": "Save words from videos as flashcards with Grabster, or study Chinese calligraphy references with CalliMate."
+    },
+    "projects": [
+      "grabster",
+      "callimate"
+    ]
+  },
+  {
+    "id": "everyday",
+    "label": {
+      "ru": "Для жизни",
+      "en": "Everyday life"
+    },
+    "title": {
+      "ru": "Приложения для повседневных задач",
+      "en": "Apps for everyday tasks"
+    },
+    "description": {
+      "ru": "Планируйте меню в рамках бюджета, создавайте свадебные приглашения и изучайте маршруты международных переводов.",
+      "en": "Plan meals within a budget, create wedding invitations and explore cross-border transfer routes."
+    },
+    "projects": [
+      "weekly-menu",
+      "nashday",
+      "a5ed425d-f006-435e-ae60-0e9319e1b6c7"
+    ]
+  },
+  {
+    "id": "tools",
+    "label": {
+      "ru": "Инструменты",
+      "en": "Tools"
+    },
+    "title": {
+      "ru": "Полезные инструменты для работы",
+      "en": "Useful tools for work"
+    },
+    "description": {
+      "ru": "Небольшие утилиты сообщества GPU. Начните с Codex Limits — виджета macOS для наблюдения за лимитами отдельных аккаунтов Codex.",
+      "en": "Small utilities from the GPU community. Start with Codex Limits, a macOS widget for monitoring usage across separate Codex accounts."
+    },
+    "projects": [
+      "codex-limits"
+    ]
+  },
+  {
+    "id": "business",
+    "label": {
+      "ru": "Для бизнеса",
+      "en": "For business"
+    },
+    "title": {
+      "ru": "B2B-инструменты для бизнеса",
+      "en": "B2B tools for businesses"
+    },
+    "description": {
+      "ru": "Сравнивайте цены конкурентов, разбирайте клиентские разговоры и управляйте расходами автопарка. Познакомьтесь с проектами и свяжитесь с разработчиками.",
+      "en": "Compare competitor prices, review customer conversations and manage fleet expenses. Explore the projects and contact their developers."
+    },
+    "projects": [
+      "price-monitor",
+      "bayun",
+      "aufix"
+    ]
+  }
+]

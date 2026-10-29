@@ -8,10 +8,51 @@ from xml.etree.ElementTree import Element,SubElement,tostring
 SITE='https://gpu.social'
 VISIBLE="('live','development','archived')"
 
+def categories(app):
+ return json.loads((app.ROOT/'public/categories.json').read_text())
+
+def category_for(app,p):
+ groups=categories(app)
+ known=next((g for g in groups if p['id'] in g['projects']),None)
+ if known:return known
+ value=p['category'].casefold()
+ direct=next((g for g in groups if value in [g['id'],*(v.casefold() for v in g['label'].values())]),None)
+ if direct:return direct
+ legacy={'b2b':'business','финансы':'everyday','finance':'everyday','еда':'everyday','food':'everyday','события':'everyday','events':'everyday','видео и голос':'content','video and voice':'content','видео':'content','video':'content','текстовый контент':'content','written content':'content','графический контент':'content','graphic content':'content'}
+ return next(g for g in groups if g['id']==legacy.get(value,'tools'))
+
+def decorate_category(app,p,en=False):
+ group=category_for(app,p)
+ p['category_id']=group['id'];p['category_label']=group['label']['en' if en else 'ru']
+
+def category_url(group,en=False):
+ return ('/en/categories/' if en else '/workshop/categories/')+group['id']+'/'
+
+def category_nav(app,rows,en=False,selected='all'):
+ language='en' if en else 'ru'
+ home=('/en/' if en else '/')+'#projects'
+ links=f'<a class="filter {"selected" if selected=="all" else ""}" href="{home}" data-category="all" aria-current="{"true" if selected=="all" else "false"}">{"All" if en else "Все"} <span>{len(rows)}</span></a>'
+ for group in categories(app):
+  count=sum(p['category_id']==group['id'] for p in rows)
+  if not count:continue
+  active=selected==group['id']
+  links+=f'<a class="filter {"selected" if active else ""}" href="{category_url(group,en)}" data-category="{group["id"]}" aria-current="{"true" if active else "false"}">{esc(group["label"][language])} <span>{count}</span></a>'
+ return '<nav class="filters category-filters" aria-label="'+('Project categories' if en else 'Категории проектов')+'">'+links+'</nav>'
+
+def category_page(app,group,en=False):
+ language='en' if en else 'ru';rows=projects(app,en)
+ chosen=[p for p in rows if p['category_id']==group['id']]
+ title=group['title'][language];description=group['description'][language]
+ search='<label class="search"><input type="search" id="search" aria-label="'+('Search projects' if en else 'Поиск проектов')+'" placeholder="'+('Search projects' if en else 'Найти проект')+'"></label>'
+ main=f'<main id="main" class="news-page category-page" data-category="{group["id"]}"><a class="text-button" href="{"/en/" if en else "/"}#projects">← {"All projects" if en else "Все проекты"}</a><h1>{esc(title)}</h1><p class="lead">{esc(description)}</p><section class="catalog"><div class="section-head">{search}</div>{category_nav(app,rows,en,group["id"])}<p class="catalog-count" id="catalog-count" role="status"></p><div id="cards" class="cards">{"".join(card(p,en) for p in chosen)}</div></section>{subscription_invite(en)}</main>'
+ schema={'@context':'https://schema.org','@type':'CollectionPage','name':title,'description':description,'url':SITE+category_url(group,en),'mainEntity':{'@type':'ItemList','numberOfItems':len(chosen),'itemListElement':[{'@type':'ListItem','position':i+1,'name':p['title'],'url':SITE+project_url(p,en)} for i,p in enumerate(chosen)]}}
+ return page(app,main,title+' — GPU',description,category_url(group),category_url(group,True),en,schema)
+
 def projects(app,en=False):
  with app.connect() as d:rows=[dict(r) for r in d.execute(f'SELECT * FROM projects WHERE status IN {VISIBLE} ORDER BY created,id')]
  if en:
   for p in rows:app.localize_english_project(p)
+ for p in rows:decorate_category(app,p,en)
  return rows
 
 def news(app):
@@ -67,7 +108,9 @@ def card(p,en=False):
   action=f'<a class="card-action" data-project-outbound href="{esc(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Visit website" if en else "Перейти на сайт"} ↗</a>'
  elif p['category']=='B2B':action=f'<a class="card-action" href="{href}">{"Contact the developers" if en else "Связаться с разработчиками"} ↗</a>'
  if p['id']=='baattle-royale' and p['status']=='live':action=f'<button type="button" class="card-action" data-play-game>{"Play here" if en else "Играть здесь"} ▷</button>'+action
- return f'<article class="card k-{kind}"><div class="card-meta"><span class="card-tags"><span class="chip">{esc(p["category"])}</span></span><span class="author">{esc(p["author"])}</span></div><h3><a href="{href}">{esc(p["title"])}</a></h3><p class="card-desc">{esc(p["description"])}</p><div class="card-bottom">{action}</div></article>'
+ label=esc(p.get('category_label',p['category']))
+ if p.get('category_id'):label=f'<a href="{category_url({"id":p["category_id"]},en)}">{label}</a>'
+ return f'<article class="card k-{kind}"><div class="card-meta"><span class="card-tags"><span class="chip">{label}</span></span><span class="author">{esc(p["author"])}</span></div><h3><a href="{href}">{esc(p["title"])}</a></h3><p class="card-desc">{esc(p["description"])}</p><div class="card-bottom">{action}</div></article>'
 
 def news_card(item,en=False):
  title=item.get('title_en',item['title']) if en else item['title']
@@ -93,21 +136,22 @@ def page(app,main,title,description,ru,en_path,en=False,schema=None):
 
 def homepage(app,en):
  html=(app.ROOT/'public'/('index-en.html' if en else 'index.html')).read_text()
- rows=projects(app,en);regular=''.join(card(p,en) for p in rows if p['category']!='B2B');b2b=''.join(card(p,en) for p in rows if p['category']=='B2B')
+ rows=projects(app,en);regular=''.join(card(p,en) for p in rows)
  html=re.sub(r'<div id="cards".*?</div>',lambda _:f'<div id="cards" class="cards" aria-live="polite">{regular}</div>',html,count=1,flags=re.S)
- html=re.sub(r'<div id="b2b-cards".*?</div>',lambda _:f'<div id="b2b-cards" class="cards" aria-live="polite">{b2b}</div>',html,count=1,flags=re.S)
- if b2b:html=html.replace('class="section b2b-section" hidden','class="section b2b-section"')
+ html=re.sub(r'<div class="filters".*?</div>',lambda _:category_nav(app,rows,en)+'<p class="catalog-count" id="catalog-count" role="status"></p>',html,count=1,flags=re.S)
  html=re.sub(r'<div id="updates">.*?</div>',lambda _:'<div id="updates">'+''.join(news_card(i,en) for i in news(app)[:4])+'</div>',html,count=1,flags=re.S)
  match=re.search(r'<main id="main">.*?</main>',html,re.S)
  main=match[0]
  main=main.replace('<div id="updates">',subscription_invite(en)+'<div id="updates">',1)
  main=main.replace('</main>',f'<p class="news-archive"><a class="text-button" href="{"/en/news/" if en else "/workshop/news/"}">{"All updates" if en else "Все новости"} →</a></p></main>')
- schema={'@context':'https://schema.org','@type':'CollectionPage','name':'GPU Social','url':SITE+('/en/' if en else '/'),'mainEntity':{'@type':'ItemList','itemListElement':[{'@type':'ListItem','position':i+1,'url':SITE+project_url(p,en),'name':p['title']} for i,p in enumerate(rows)]}}
+ schema={'@context':'https://schema.org','@type':'CollectionPage','name':'GPU Social','publisher':{'@type':'Organization','@id':SITE+'/#community','name':'Gifted People United','url':SITE+'/','sameAs':['https://github.com/GPU-gifted-people-united/gpu.social','https://t.me/GiftedPeopleUnited']},'url':SITE+('/en/' if en else '/'),'mainEntity':{'@type':'ItemList','itemListElement':[{'@type':'ListItem','position':i+1,'url':SITE+project_url(p,en),'name':p['title']} for i,p in enumerate(rows)]}}
  return page(app,main,'GPU — '+('projects by Gifted People United' if en else 'проекты сообщества Gifted People United'),'Community-built projects to explore, try and share.' if en else 'Проекты сообщества: пробуйте полезные инструменты, знакомьтесь с авторами и добавляйте своё.','/','/en/',en,schema)
 
 def project_page(app,p,en):
  if en:app.localize_english_project(p)
- title=esc(p['title']);author=esc(p['author']);category=esc(p['category']);description=esc(p['description'])
+ decorate_category(app,p,en)
+ group=category_for(app,p)
+ title=esc(p['title']);author=esc(p['author']);category=esc(p.get('category_label',p['category']));description=esc(p['description'])
  action=''
  if p['status']=='live' and app.valid_url(p['url']):action=f'<a class="button" data-project-outbound href="{esc(p["url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Visit website" if en else "Перейти на сайт"} ↗</a>'
  if p['category']=='B2B' or not action:action+=f'<button class="button ghost" id="project-contact">{("Contact the developers" if en else "Связаться с разработчиками") if p["category"]=="B2B" else ("I want to try it" if en else "Хочу попробовать")} ↗</button>'
@@ -124,9 +168,11 @@ def project_page(app,p,en):
  related=[i for i in news(app) if any(urlparse(u).path.rstrip('/')==project_url(p).rstrip('/') for u in i.get('project_urls',[]))]
  related_html=''
  if related:related_html='<section class="project-updates"><h2>'+('Updates & community posts' if en else 'Новости и публикации')+'</h2>'+''.join(news_card(i,en) for i in related)+'</section>'
+ similar=[other for other in projects(app,en) if other['category_id']==group['id'] and other['id']!=p['id']][:3]
+ if similar:related_html+='<section class="project-updates"><h2>'+('More in this category' if en else 'Ещё в этой категории')+'</h2><div class="cards">'+''.join(card(other,en) for other in similar)+'</div></section>'
  updated=f'<p class="muted">{"Description updated" if en else "Описание обновлено"}: {esc(fields["updated"])}</p>' if fields.get('updated') else ''
- main=f'<main id="main" class="project-page" data-project-id="{esc(p["id"])}" data-project-title="{title}" data-project-status="{esc(p["status"])}" data-project-category="{category}"><a class="text-button" href="{"/en/" if en else "/"}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow">{category}</p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="project-facts">{details}</section>{updated}{related_html}{subscription_invite(en)}{demo}</main>'
- schema={'@context':'https://schema.org','@type':'SoftwareApplication','name':p['title'],'description':p['description'],'url':SITE+project_url(p,en),'applicationCategory':p['category'],'author':{'@type':'Person','name':p['author']},'inLanguage':language}
+ main=f'<main id="main" class="project-page" data-project-id="{esc(p["id"])}" data-project-title="{title}" data-project-status="{esc(p["status"])}" data-project-category="{esc(p["category"])}"><a class="text-button" href="{"/en/" if en else "/"}#projects">← {"All projects" if en else "Все проекты"}</a><p class="eyebrow"><a href="{category_url(group,en)}">{category}</a></p><h1>{title}</h1><p class="lead">{description}</p><p class="author">{"Made by" if en else "Создали"}: {author}</p><div class="actions">{action}<button class="text-button" id="share-project">{"Share this project" if en else "Поделиться проектом"} ↗</button><span id="share-status" role="status"></span></div><section class="project-facts">{details}</section>{updated}{related_html}{subscription_invite(en)}{demo}</main>'
+ schema={'@context':'https://schema.org','@type':'SoftwareApplication','name':p['title'],'description':p['description'],'url':SITE+project_url(p,en),'applicationCategory':p['category_label'],'author':{'@type':'Person','name':p['author']},'inLanguage':language}
  if fields.get('platforms',{}).get('en'):schema['operatingSystem']=fields['platforms']['en']
  if p['url']:schema['sameAs']=p['url']
  return page(app,main,p['title']+' — GPU',p['description'],project_url(p),project_url(p,True),en,schema)
@@ -154,9 +200,16 @@ def response(app,path):
  if path in ('/workshop','/workshop/'):
   return None # Handler redirects these aliases.
  if path=='/robots.txt':return 200,'User-agent: *\nAllow: /\nDisallow: /workshop/api/\nDisallow: /en/api/\nDisallow: /workshop/subscription/\nSitemap: '+SITE+'/sitemap.xml\n','text/plain; charset=utf-8'
+ match=re.fullmatch(r'/(workshop|en)/categories/([a-z-]+)/?',path)
+ if match:
+  group=next((g for g in categories(app) if g['id']==match[2]),None)
+  if not group or not any(p['category_id']==group['id'] for p in projects(app)):return 404,{'error':'Category not found'},'application/json; charset=utf-8'
+  return 200,category_page(app,group,match[1]=='en'),'text/html; charset=utf-8'
  if path=='/sitemap.xml':
   root=Element('urlset',xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
   pairs=[('/','/en/'),('/workshop/people/','/en/people/'),('/workshop/news/','/en/news/')]+[(project_url(p),project_url(p,True)) for p in projects(app)]+[(news_url(i),news_url(i,True)) for i in news(app)]
+  present={p['category_id'] for p in projects(app)}
+  pairs += [(category_url(g),category_url(g,True)) for g in categories(app) if g['id'] in present]
   for pair in pairs:
    for loc in pair:
     node=SubElement(root,'url');SubElement(node,'loc').text=SITE+loc

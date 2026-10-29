@@ -51,3 +51,24 @@ Private commands:
 - `python3 manage.py social UPDATE_ID --platform LinkedIn --url https://www.linkedin.com/posts/...` — attach an already published public post to the news, website, emails and agent feed. Use a canonical LinkedIn URL or t.me post URL. Dot checks newly added post URLs even when the news item already existed.
 
 GA4 preserves dot_prompt_copy_click and adds newsletter_open, newsletter_signup_request, support_post_click and project_website_click without addresses or subscription tokens. Validate delivery with an explicitly authorised test address. Do not use submission contacts as a mailing list.
+
+## Categories and organic discovery
+
+The six shared groups and bilingual editorial introductions live in public/categories.json.
+Known projects have stable group membership; new projects can use a group label or ID,
+with legacy categories recognised automatically. Keep B2B as the internal category for
+business contact actions. Update the mapping when moderating a project with an unusual category.
+
+The home catalogue combines all projects with six filters and search within the selected group.
+Category links also work without JavaScript and lead to permanent RU/EN HTML collections
+at /workshop/categories/ID/ and /en/categories/ID/. Each nonempty collection has its own
+canonical, reciprocal hreflang, description, ItemList schema and sitemap entry.
+Project pages link to their category and other published projects in that group.
+category_filter_click in GA4 records group IDs and language, never search text.
+
+SEO/GEO verification: test HTML without JS, matching visible/schema counts, translations,
+hidden-project exclusion, canonical and reciprocal language links, sitemap and crawler access.
+These checks establish crawlability, not proof of indexing or rankings. Use the owner's
+Google Search Console and Bing Webmaster Tools for index coverage and actual search queries.
+Add the existing sitemap there once ownership is verified; do not invent a verification token.
+For editorial growth, prefer real demos and maker-written use cases over generated keyword pages.

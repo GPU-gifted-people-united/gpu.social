@@ -36,6 +36,35 @@ class Updates(unittest.TestCase):
   schema=json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',page,re.S)[1]);self.assertEqual(schema['@type'],'SoftwareApplication');self.assertEqual(schema['sameAs'],'https://aufix.app')
   code,sitemap=self.req('/sitemap.xml');self.assertEqual(code,200);ElementTree.fromstring(sitemap);self.assertIn('/workshop/projects/aufix/',sitemap);self.assertNotIn('secret-hidden',sitemap)
   self.assertIn('Sitemap: https://gpu.social/sitemap.xml',self.req('/robots.txt')[1]);self.assertEqual(self.req('/en/projects/secret-hidden/')[0],404)
+ def test_category_pages_languages_and_hidden_projects(self):
+  with server.connect() as d:
+   for pid,title in [('baattle-royale','Baattle Royale'),('callimate','CalliMate')]:
+    d.execute('INSERT INTO projects VALUES(?,?,?,?,?,?,?,?)',(pid,title,'Public example','Игры' if pid=='baattle-royale' else 'Обучение','live','https://example.com','Maker',0))
+  api=json.loads(self.req('/en/api/projects')[1]);byid={p['id']:p for p in api}
+  self.assertEqual(byid['aufix']['category'],'B2B')
+  self.assertEqual(byid['aufix']['category_label'],'For business')
+  self.assertEqual(byid['baattle-royale']['category_id'],'games')
+  self.assertEqual(byid['callimate']['category_label'],'Learning')
+  home=self.req('/')[1]
+  self.assertIn('data-category="games"',home);self.assertNotIn('b2b-cards',home)
+  code,html=self.req('/en/categories/games/');self.assertEqual(code,200)
+  self.assertIn('Browser and party games',html)
+  self.assertIn('canonical" href="https://gpu.social/en/categories/games/"',html)
+  self.assertIn('hreflang="ru" href="https://gpu.social/workshop/categories/games/"',html)
+  schema=json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',html,re.S)[1])
+  self.assertEqual(schema['mainEntity']['numberOfItems'],1)
+  self.assertEqual(schema['mainEntity']['itemListElement'][0]['name'],'Baattle Royale')
+  self.assertNotIn('/en/projects/aufix/',html);self.assertNotIn('Hidden project',html)
+  self.assertEqual(self.req('/workshop/categories/nonexistent/')[0],404)
+  self.assertEqual(self.req('/en/categories/content/')[0],404)
+  sitemap=self.req('/sitemap.xml')[1]
+  self.assertIn('/en/categories/games/',sitemap);self.assertIn('/workshop/categories/games/',sitemap)
+  self.assertNotIn('/categories/content/',sitemap)
+  business=self.req('/en/projects/aufix/')[1]
+  self.assertIn('data-project-category="B2B"',business)
+  self.assertIn('Contact the developers',business)
+  self.assertIn('href="/en/categories/business/"',business)
+
  def test_linked_post_news_and_feed(self):
   uid='gpu-new-projects-2026-10-19';code,page=self.req('/en/news/'+uid+'/');self.assertEqual(code,200);self.assertIn('Support on LinkedIn',page);self.assertIn('news-post-text',page)
   with server.connect() as d:d.execute('INSERT INTO update_posts VALUES(?,?,?,?)',(uid,'Telegram','https://t.me/GiftedPeopleUnited/42',int(time.time())))

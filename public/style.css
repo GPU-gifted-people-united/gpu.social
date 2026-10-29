@@ -280,3 +280,15 @@ label small{display:block;margin-top:8px;font-size:12px;font-weight:400;color:va
 .game-dialog p{font-size:14px;margin:10px 0}
 #game-container iframe{display:block;border:0;width:100%;height:min(72dvh,760px);background:#101713}
 @media(max-width:640px){.game-dialog{padding:10px}#game-container iframe{height:70dvh}}
+
+/* One catalogue, with crawlable category links and compact filters. */
+.category-filters{margin-top:0}
+.category-filters .filter{text-decoration:none;white-space:nowrap}
+.category-filters .filter span{margin-left:5px;opacity:.65;font-size:.85em}
+.catalog-count{color:var(--muted);font-size:14px;margin:0 0 16px}
+.catalog-count:empty{display:none}
+.category-page .catalog{margin:32px 0}
+.category-page .section-head{justify-content:flex-end}
+.chip a{text-decoration:none;color:inherit}
+.chip a:hover{text-decoration:underline}
+@media(max-width:640px){.category-filters{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:8px}.category-filters .filter{flex-shrink:0}.category-page .search{width:100%}}
