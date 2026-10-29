@@ -55,6 +55,44 @@ def projects(app,en=False):
  for p in rows:decorate_category(app,p,en)
  return rows
 
+def stories(app):
+ visible={p['id'] for p in projects(app)}
+ return [s for s in json.loads((app.ROOT/'public/stories.json').read_text()) if s['project_id'] in visible]
+
+def story_url(story,en=False):
+ return ('/en/stories/' if en else '/workshop/stories/')+story['id']+'/'
+
+def story_references(item,available):
+ ids={urlparse(u).path.rstrip('/').split('/')[-1] for u in item.get('project_urls',[])}
+ return [{'url':SITE+story_url(story),'url_en':SITE+story_url(story,True),'title':story['title']['ru'],'title_en':story['title']['en']} for story in available if story['project_id'] in ids]
+
+def story_post(story,en=False):
+ language='en' if en else 'ru'
+ return story['post'][language]+'\n'+SITE+story_url(story,en)+'\n\n'+('Built something too? Bring it to GPU — we’ll spread the word together.' if en else 'Тоже что-то сделал? Приноси в GPU — будем продвигать вместе.')
+
+def story_links(app,item,en=False):
+ ids={urlparse(u).path.rstrip('/').split('/')[-1] for u in item.get('project_urls',[])}
+ return ''.join(f'<a class="text-button" href="{story_url(s,en)}">{esc(s["title"]["en" if en else "ru"])} →</a>' for s in stories(app) if s['project_id'] in ids)
+
+def story_page(app,story,en=False):
+ language='en' if en else 'ru'
+ p=next(p for p in projects(app,en) if p['id']==story['project_id'])
+ title=story['title'][language];description=story['summary'][language]
+ sections=''
+ for section in story['sections']:
+  sections+='<section><h2>'+esc(section['heading'][language])+'</h2>'
+  sections+=''.join('<p>'+esc(text)+'</p>' for text in section.get('paragraphs',{}).get(language,[]))
+  steps=section.get('steps',{}).get(language,[])
+  if steps:sections+='<ol>'+''.join('<li>'+esc(text)+'</li>' for text in steps)+'</ol>'
+  sections+='</section>'
+ demo=''
+ if story.get('demo_image'):
+  demo=f'<figure><img src="{esc(story["demo_image"],quote=True)}" alt="{esc(story["image_alt"][language],quote=True)}" width="1366" height="900" loading="lazy"><figcaption>{esc(story["image_alt"][language])}</figcaption></figure><button type="button" class="button" data-play-game>{"Play here" if en else "Играть здесь"} ▷</button>'
+ main=f'<main id="main" class="news-page story-page"><a class="text-button" href="{"/en/stories/" if en else "/workshop/stories/"}">← {"Project stories" if en else "Истории проектов"}</a><time datetime="{esc(story["date_published"])}">{story["date_published"][:10]}</time><h1>{esc(title)}</h1><p class="lead">{esc(description)}</p><p class="muted">{"GPU editorial team · Maker: " if en else "Редакция GPU · Создали проект: "}{esc(p["author"])}</p><article class="story-body">{sections}{demo}<p class="story-source">{esc(story["source_note"][language])} <a href="{esc(story["source_url"],quote=True)}" target="_blank" rel="noopener noreferrer">{"Source" if en else "Источник"} ↗</a></p></article><div class="actions"><a class="button" href="{project_url(p,en)}">{"Try the project" if en else "Попробовать проект"} →</a><button class="text-button" id="share-news">{"Copy post" if en else "Скопировать пост"}</button><span id="share-news-status" role="status"></span></div><details class="agent-details"><summary>{"Ready-to-share post" if en else "Готовый текст для публикации"}</summary><div class="agent-details-body"><textarea id="news-post-text" readonly rows="9" aria-label="{"Post text" if en else "Текст поста"}">{esc(story_post(story,en))}</textarea></div></details>{subscription_invite(en)}</main>'
+ schema={'@context':'https://schema.org','@type':'Article','headline':title,'description':description,'datePublished':story['date_published'],'inLanguage':language,'mainEntityOfPage':SITE+story_url(story,en),'author':{'@type':'Organization','name':'GPU editorial team'},'publisher':{'@type':'Organization','name':'Gifted People United','url':SITE+'/'},'about':{'@type':'SoftwareApplication','name':p['title'],'url':SITE+project_url(p,en)},'citation':story['source_url']}
+ if story.get('demo_image'):schema['image']=SITE+story['demo_image']
+ return page(app,main,title+' — GPU',description,story_url(story),story_url(story,True),en,schema)
+
 def news(app):
  items=json.loads((app.ROOT/'updates.json').read_text())
  with app.connect() as d:
@@ -62,7 +100,10 @@ def news(app):
   posts=[dict(r) for r in d.execute('SELECT * FROM update_posts ORDER BY created,url')]
  known={i['id'] for i in items}
  items=items+[i for i in runtime if i['id'] not in known]
+ available_stories=stories(app)
  for item in items:
+  item['stories']=story_references(item,available_stories)
+  item['story_urls']=[story['url'] for story in item['stories']]
   for post in posts:
    if post['update_id']==item['id']:
     existing=item.setdefault('social_posts',[])
@@ -75,13 +116,14 @@ def post_text(app,item,en=False):
  summary=item.get('summary_en',item['summary']) if en else item['summary']
  ids={urlparse(u).path.rstrip('/').split('/')[-1] for u in item.get('project_urls',[])}
  rows=[p for p in projects(app,en) if p['id'] in ids]
- return title+'\n\n'+summary+'\n\n'+'\n\n'.join(p['title']+' — '+p['author']+'\n'+p['description']+'\n'+SITE+project_url(p,en) for p in rows)+'\n\n'+('Try a project, share feedback, and bring your own — we’ll spread the word together.' if en else 'Пробуйте, делитесь отзывами и приносите своё — будем продвигать вместе.')+'\n'+SITE+news_url(item,en)
+ story_text=''.join('\n'+u.replace('/workshop/stories/','/en/stories/') if en else '\n'+u for u in item.get('story_urls',[]))
+ return title+'\n\n'+summary+story_text+'\n\n'+'\n\n'.join(p['title']+' — '+p['author']+'\n'+p['description']+'\n'+SITE+project_url(p,en) for p in rows)+'\n\n'+('Try a project, share feedback, and bring your own — we’ll spread the word together.' if en else 'Пробуйте, делитесь отзывами и приносите своё — будем продвигать вместе.')+'\n'+SITE+news_url(item,en)
 
 def feed(app):
  items=[]
  for source in news(app):
   item=dict(source);item['url']=SITE+news_url(item);item['url_en']=SITE+news_url(item,True)
-  item['content_text']=item['summary']+''.join('\n'+p['platform']+': '+p['url'] for p in item.get('social_posts',[]))
+  item['content_text']=item['summary']+''.join('\n'+u for u in item.get('story_urls',[]))+''.join('\n'+p['platform']+': '+p['url'] for p in item.get('social_posts',[]))
   items.append(item)
  return {'version':'https://jsonfeed.org/version/1.1','title':'GPU / Updates','home_page_url':SITE+'/','feed_url':SITE+'/workshop/feed.json','items':items}
 
@@ -112,10 +154,10 @@ def card(p,en=False):
  if p.get('category_id'):label=f'<a href="{category_url({"id":p["category_id"]},en)}">{label}</a>'
  return f'<article class="card k-{kind}"><div class="card-meta"><span class="card-tags"><span class="chip">{label}</span></span><span class="author">{esc(p["author"])}</span></div><h3><a href="{href}">{esc(p["title"])}</a></h3><p class="card-desc">{esc(p["description"])}</p><div class="card-bottom">{action}</div></article>'
 
-def news_card(item,en=False):
+def news_card(item,en=False,app=None):
  title=item.get('title_en',item['title']) if en else item['title']
  summary=item.get('summary_en',item['summary']) if en else item['summary']
- return f'<article class="update"><time datetime="{esc(item["date_published"])}">{esc(item["date_published"][:10])}</time><div><h3><a href="{news_url(item,en)}">{esc(title)}</a></h3><p>{esc(summary)}</p></div><div class="actions"><a class="text-button" href="{news_url(item,en)}">{"View projects" if en else "Посмотреть проекты"} ↗</a>{social_links(item,en)}</div></article>'
+ return f'<article class="update"><time datetime="{esc(item["date_published"])}">{esc(item["date_published"][:10])}</time><div><h3><a href="{news_url(item,en)}">{esc(title)}</a></h3><p>{esc(summary)}</p></div><div class="actions"><a class="text-button" href="{news_url(item,en)}">{"View projects" if en else "Посмотреть проекты"} ↗</a>{social_links(item,en)}{story_links(app,item,en) if app else ""}</div></article>'
 
 def subscription_invite(en=False):
  return f'<div class="subscribe-invite"><p>{"New projects. Only when there is news." if en else "Новые проекты. Только когда есть новости."}</p><a class="button" data-subscribe-open href="{"/en/subscribe/" if en else "/workshop/subscribe/"}">{"Get updates" if en else "Получать новинки"}</a></div>'
@@ -139,7 +181,7 @@ def homepage(app,en):
  rows=projects(app,en);regular=''.join(card(p,en) for p in rows)
  html=re.sub(r'<div id="cards".*?</div>',lambda _:f'<div id="cards" class="cards" aria-live="polite">{regular}</div>',html,count=1,flags=re.S)
  html=re.sub(r'<div class="filters".*?</div>',lambda _:category_nav(app,rows,en)+'<p class="catalog-count" id="catalog-count" role="status"></p>',html,count=1,flags=re.S)
- html=re.sub(r'<div id="updates">.*?</div>',lambda _:'<div id="updates">'+''.join(news_card(i,en) for i in news(app)[:4])+'</div>',html,count=1,flags=re.S)
+ html=re.sub(r'<div id="updates">.*?</div>',lambda _:'<div id="updates">'+''.join(news_card(i,en,app) for i in news(app)[:4])+'</div>',html,count=1,flags=re.S)
  match=re.search(r'<main id="main">.*?</main>',html,re.S)
  main=match[0]
  main=main.replace('<div id="updates">',subscription_invite(en)+'<div id="updates">',1)
@@ -167,7 +209,9 @@ def project_page(app,p,en):
   if value:details+=f'<div><h2>{en_label if en else ru_label}</h2><p>{esc(value)}</p></div>'
  related=[i for i in news(app) if any(urlparse(u).path.rstrip('/')==project_url(p).rstrip('/') for u in i.get('project_urls',[]))]
  related_html=''
- if related:related_html='<section class="project-updates"><h2>'+('Updates & community posts' if en else 'Новости и публикации')+'</h2>'+''.join(news_card(i,en) for i in related)+'</section>'
+ guides=[story for story in stories(app) if story['project_id']==p['id']]
+ if guides:related_html='<section class="project-updates"><h2>'+('Project story & guide' if en else 'История и знакомство с проектом')+'</h2>'+''.join(f'<p><a class="text-button" href="{story_url(story,en)}">{esc(story["title"]["en" if en else "ru"])} →</a></p>' for story in guides)+'</section>'
+ if related:related_html+='<section class="project-updates"><h2>'+('Updates & community posts' if en else 'Новости и публикации')+'</h2>'+''.join(news_card(i,en,app) for i in related)+'</section>'
  similar=[other for other in projects(app,en) if other['category_id']==group['id'] and other['id']!=p['id']][:3]
  if similar:related_html+='<section class="project-updates"><h2>'+('More in this category' if en else 'Ещё в этой категории')+'</h2><div class="cards">'+''.join(card(other,en) for other in similar)+'</div></section>'
  updated=f'<p class="muted">{"Description updated" if en else "Описание обновлено"}: {esc(fields["updated"])}</p>' if fields.get('updated') else ''
@@ -182,7 +226,7 @@ def news_page(app,item,en):
  ids={urlparse(u).path.rstrip('/').split('/')[-1] for u in item.get('project_urls',[])}
  rows=[p for p in projects(app,en) if p['id'] in ids]
  body=''.join(card(p,en) for p in rows)
- main=f'<main id="main" class="news-page"><a class="text-button" href="{"/en/news/" if en else "/workshop/news/"}">← {"All updates" if en else "Все новости"}</a><time datetime="{esc(item["date_published"])}">{item["date_published"][:10]}</time><h1>{esc(title)}</h1><p class="lead">{esc(summary)}</p><div class="actions">{social_links(item,en)}<button class="text-button" id="share-news">{"Copy post" if en else "Скопировать пост"}</button><span id="share-news-status" role="status"></span></div><details class="agent-details"><summary>{"Ready-to-share post" if en else "Готовый текст для публикации"}</summary><div class="agent-details-body"><textarea id="news-post-text" readonly rows="10" aria-label="{"Post text" if en else "Текст поста"}">{esc(post_text(app,item,en))}</textarea></div></details><div class="cards news-projects">{body}</div>{subscription_invite(en)}</main>'
+ main=f'<main id="main" class="news-page"><a class="text-button" href="{"/en/news/" if en else "/workshop/news/"}">← {"All updates" if en else "Все новости"}</a><time datetime="{esc(item["date_published"])}">{item["date_published"][:10]}</time><h1>{esc(title)}</h1><p class="lead">{esc(summary)}</p><div class="actions">{social_links(item,en)}{story_links(app,item,en)}<button class="text-button" id="share-news">{"Copy post" if en else "Скопировать пост"}</button><span id="share-news-status" role="status"></span></div><details class="agent-details"><summary>{"Ready-to-share post" if en else "Готовый текст для публикации"}</summary><div class="agent-details-body"><textarea id="news-post-text" readonly rows="10" aria-label="{"Post text" if en else "Текст поста"}">{esc(post_text(app,item,en))}</textarea></div></details><div class="cards news-projects">{body}</div>{subscription_invite(en)}</main>'
  schema={'@context':'https://schema.org','@type':'BlogPosting','headline':title,'description':summary,'datePublished':item['date_published'],'inLanguage':'en' if en else 'ru','mainEntityOfPage':SITE+news_url(item,en),'publisher':{'@type':'Organization','name':'GPU — Gifted People United','url':SITE},'author':{'@type':'Organization','name':'GPU — Gifted People United'},'about':[{'@type':'SoftwareApplication','name':p['title'],'url':SITE+project_url(p,en)} for p in rows]}
  return page(app,main,title+' — GPU',summary,news_url(item),news_url(item,True),en,schema)
 
@@ -205,9 +249,23 @@ def response(app,path):
   group=next((g for g in categories(app) if g['id']==match[2]),None)
   if not group or not any(p['category_id']==group['id'] for p in projects(app)):return 404,{'error':'Category not found'},'application/json; charset=utf-8'
   return 200,category_page(app,group,match[1]=='en'),'text/html; charset=utf-8'
+ match=re.fullmatch(r'/(workshop|en)/stories(?:/([a-z0-9-]+))?/?',path)
+ if match:
+  en=match[1]=='en';language='en' if en else 'ru'
+  if match[2]:
+   story=next((s for s in stories(app) if s['id']==match[2]),None)
+   if not story:return 404,{'error':'Story not found'},'application/json; charset=utf-8'
+   return 200,story_page(app,story,en),'text/html; charset=utf-8'
+  title='Project stories' if en else 'Истории проектов'
+  description='Practical guides, demos and stories from the GPU community.' if en else 'Знакомимся с проектами GPU: задачи, сценарии использования и демо.'
+  listing=''.join(f'<article class="update"><h2><a href="{story_url(s,en)}">{esc(s["title"][language])}</a></h2><p>{esc(s["summary"][language])}</p></article>' for s in stories(app))
+  invitation='Made a project? Tell us what problem it solves, show a demo and share what you learned.' if en else 'Сделал проект? Расскажи, какую задачу он решает, покажи демо и поделись тем, что получилось.'
+  main=f'<main id="main" class="news-page"><h1>{title}</h1><p class="lead">{description}</p><div class="story-list">{listing}</div><p>{invitation}</p><div class="actions"><button class="button" type="button" data-kind="story">{"Tell your story" if en else "Рассказать историю"}</button><a class="text-button" href="https://t.me/GiftedPeopleUnited" target="_blank" rel="noopener noreferrer">{"Talk to GPU on Telegram" if en else "Обсудить в Telegram GPU"} ↗</a></div></main>'
+  return 200,page(app,main,title+' — GPU',description,'/workshop/stories/','/en/stories/',en),'text/html; charset=utf-8'
  if path=='/sitemap.xml':
   root=Element('urlset',xmlns='http://www.sitemaps.org/schemas/sitemap/0.9')
   pairs=[('/','/en/'),('/workshop/people/','/en/people/'),('/workshop/news/','/en/news/')]+[(project_url(p),project_url(p,True)) for p in projects(app)]+[(news_url(i),news_url(i,True)) for i in news(app)]
+  pairs += [('/workshop/stories/','/en/stories/')]+[(story_url(s),story_url(s,True)) for s in stories(app)]
   present={p['category_id'] for p in projects(app)}
   pairs += [(category_url(g),category_url(g,True)) for g in categories(app) if g['id'] in present]
   for pair in pairs:
@@ -227,7 +285,7 @@ def response(app,path):
    item=next((i for i in news(app) if i['id']==match[2]),None)
    if not item:return 404,{'error':'Update not found'},'application/json; charset=utf-8'
    return 200,news_page(app,item,en),'text/html; charset=utf-8'
-  main='<main id="main" class="news-page"><h1>'+('What’s new at GPU' if en else 'Что нового в GPU')+'</h1>'+subscription_invite(en)+''.join(news_card(i,en) for i in news(app))+'</main>'
+  main='<main id="main" class="news-page"><h1>'+('What’s new at GPU' if en else 'Что нового в GPU')+'</h1><p><a class="text-button" href="'+('/en/stories/' if en else '/workshop/stories/')+'">'+('Project stories →' if en else 'Истории проектов →')+'</a></p>'+subscription_invite(en)+''.join(news_card(i,en,app) for i in news(app))+'</main>'
   return 200,page(app,main,'GPU — '+('Updates' if en else 'Новости'),'New projects and updates from Gifted People United.' if en else 'Новые проекты и новости сообщества Gifted People United.','/workshop/news/','/en/news/',en),'text/html; charset=utf-8'
  if path in ('/workshop/people/','/en/people/'):
   en=path.startswith('/en/');html=(app.ROOT/'public'/('people-en.html' if en else 'people.html')).read_text();main=re.search(r'<main id="main".*?</main>',html,re.S)[0]

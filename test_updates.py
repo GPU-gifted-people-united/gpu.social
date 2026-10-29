@@ -65,6 +65,38 @@ class Updates(unittest.TestCase):
   self.assertIn('Contact the developers',business)
   self.assertIn('href="/en/categories/business/"',business)
 
+ def test_editorial_stories_and_hidden_project_protection(self):
+  with server.connect() as d:
+   d.execute('INSERT INTO projects VALUES(?,?,?,?,?,?,?,?)',('baattle-royale','Baattle Royale','Game description','Игры','live','https://baattleroyale.com/','Maks Kurilenko',0))
+  code,html=self.req('/en/stories/baattle-royale/');self.assertEqual(code,200)
+  self.assertIn('Quick play',html);self.assertIn('GPU editorial team',html);self.assertIn('data-play-game',html)
+  self.assertIn('/en/projects/baattle-royale/',html);self.assertIn('/workshop/baattle-demo.png',html)
+  self.assertIn('canonical" href="https://gpu.social/en/stories/baattle-royale/"',html)
+  schema=json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>',html,re.S)[1])
+  self.assertEqual(schema['@type'],'Article');self.assertEqual(schema['author']['name'],'GPU editorial team')
+  self.assertEqual(self.req('/en/stories/callimate/')[0],404)
+  self.assertIn('/en/stories/baattle-royale/',self.req('/sitemap.xml')[1])
+  feed=json.loads(self.req('/workshop/feed.json')[1])
+  item=next(i for i in feed['items'] if i['id']=='gpu-new-projects-2026-10-30')
+  self.assertEqual(len(item['stories']),1);self.assertIn('/workshop/stories/baattle-royale/',item['content_text'])
+  self.assertIn('/en/stories/baattle-royale/',self.req('/en/projects/baattle-royale/')[1])
+  with server.connect() as d:d.execute("UPDATE projects SET status='hidden' WHERE id='baattle-royale'")
+  self.assertEqual(self.req('/en/stories/baattle-royale/')[0],404)
+  self.assertNotIn('/stories/baattle-royale/',self.req('/sitemap.xml')[1])
+  feed=json.loads(self.req('/workshop/feed.json')[1])
+  self.assertFalse(next(i for i in feed['items'] if i['id']=='gpu-new-projects-2026-10-30')['stories'])
+
+ def test_story_submission_is_private_and_moderated(self):
+  payload={'kind':'story','title':'My real project story','description':'A real problem, a demo and what I learned.','author':'Test maker','contact':'maker@example.com','url':'https://example.com/demo','consent':True}
+  code,body=self.req('/workshop/api/submissions',payload);self.assertEqual(code,201)
+  sid=json.loads(body)['id']
+  with server.connect() as d:
+   row=d.execute('SELECT kind,status,contact FROM submissions WHERE id=?',(sid,)).fetchone()
+   self.assertEqual(tuple(row),('story','pending','maker@example.com'))
+  for path in ['/workshop/stories/','/en/stories/','/workshop/feed.json','/sitemap.xml']:
+   self.assertNotIn('My real project story',self.req(path)[1])
+   self.assertNotIn('maker@example.com',self.req(path)[1])
+
  def test_linked_post_news_and_feed(self):
   uid='gpu-new-projects-2026-10-19';code,page=self.req('/en/news/'+uid+'/');self.assertEqual(code,200);self.assertIn('Support on LinkedIn',page);self.assertIn('news-post-text',page)
   with server.connect() as d:d.execute('INSERT INTO update_posts VALUES(?,?,?,?)',(uid,'Telegram','https://t.me/GiftedPeopleUnited/42',int(time.time())))

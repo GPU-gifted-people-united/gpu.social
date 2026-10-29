@@ -72,3 +72,20 @@ These checks establish crawlability, not proof of indexing or rankings. Use the 
 Google Search Console and Bing Webmaster Tools for index coverage and actual search queries.
 Add the existing sitemap there once ownership is verified; do not invent a verification token.
 For editorial growth, prefer real demos and maker-written use cases over generated keyword pages.
+
+## Project stories
+
+public/stories.json stores bilingual editorial guides: reviewed facts, step-by-step use cases,
+public source links and a post draft linking directly to each guide. Stories are published
+only while their project is visible in the catalogue. Routes: /workshop/stories/SLUG/
+and /en/stories/SLUG/, plus archives. HTML, metadata and Article schema share the same source.
+Project pages, relevant news, RSS/JSON and the sitemap link to the guides.
+Existing news IDs remain unchanged, so editorial expansion does not resend an old announcement.
+
+Keep interviews separate from editorial guides: do not invent a maker's motivation, quotes,
+usage metrics, testimonials or personal experience. Label the source of each guide.
+Demo screenshots must come from a real check; do not present an App Store listing as a hands-on review.
+Each guide has a ready-to-copy RU/EN post. Publishing social posts still follows the owner's chosen workflow.
+
+The story archive also accepts kind=story submissions using the existing private moderation inbox,
+input validation and rate limit. They are never automatically inserted into public stories or feeds.
