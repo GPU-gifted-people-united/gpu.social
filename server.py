@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """GPU workshop: standard-library HTTP service + persistent SQLite."""
 import argparse, hashlib, json, os, re, sqlite3, time, uuid, sys
+from datetime import datetime,timezone
 import public_pages, notifications
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -66,6 +67,35 @@ def valid_linkedin(v):
  p=urlparse(v)
  return p.scheme=='https' and p.hostname in ('linkedin.com','www.linkedin.com') and bool(re.fullmatch(r'/(in|pub)/[A-Za-z0-9_%.-]+/?',p.path)) and not p.username and not p.password
 
+def publish_update(submission_id,content):
+ """Publish reviewed bilingual copy atomically; never copy private contact fields."""
+ if not isinstance(content,dict):raise ValueError('Reviewed content must be a JSON object')
+ for key,maximum in [('title',120),('title_en',120),('summary',3000),('summary_en',3000)]:
+  if not isinstance(content.get(key),str) or not 3<=len(content[key].strip())<=maximum:raise ValueError('Reviewed RU/EN title and summary are required')
+ uid='update-'+submission_id
+ with connect() as d:
+  d.execute('BEGIN IMMEDIATE')
+  row=d.execute("SELECT * FROM submissions WHERE id=? AND kind='update'",(submission_id,)).fetchone()
+  if not row:raise ValueError('Update submission not found')
+  if row['status']=='published':
+   if not d.execute('SELECT 1 FROM runtime_updates WHERE id=?',(uid,)).fetchone():raise ValueError('Published update missing')
+   return uid
+  if row['status']!='pending':raise ValueError('Update is not pending')
+  project=d.execute("SELECT id FROM projects WHERE id=? AND status IN ('live','archived','development')",(row['project_id'],)).fetchone()
+  if not project:raise ValueError('Project is no longer public')
+  url=content.get('external_url',row['url'])
+  if not isinstance(url,str) or len(url)>1000 or (url and not valid_url(url)):raise ValueError('Use a public http(s) update URL')
+  item={key:content[key].strip() for key in ('title','title_en','summary','summary_en')}
+  item.update({'id':uid,'kind':'project-update','source_project_id':project['id'],'date_published':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'project_urls':['https://gpu.social'+public_pages.project_url(project)],'external_url':url})
+  target=urlparse(url)
+  if target.scheme=='https' and target.hostname in ('www.linkedin.com','linkedin.com') and target.path.startswith(('/posts/','/feed/update/')):
+   item['social_posts']=[{'platform':'LinkedIn','url':url}]
+  elif target.scheme=='https' and target.hostname=='t.me' and re.fullmatch(r'/[A-Za-z0-9_]+/[0-9]+/?',target.path):
+   item['social_posts']=[{'platform':'Telegram','url':url}]
+  d.execute('INSERT INTO runtime_updates VALUES(?,?)',(uid,json.dumps(item,ensure_ascii=False)))
+  d.execute("UPDATE submissions SET status='published' WHERE id=?",(submission_id,))
+ return uid
+
 class Handler(BaseHTTPRequestHandler):
  def setup(self):
   super().setup(); self.connection.settimeout(15)
@@ -109,7 +139,7 @@ class Handler(BaseHTTPRequestHandler):
    if not isinstance(obj,dict):raise ValueError()
    if obj.get('website'):return self.send(400,{'error':'Не удалось отправить форму.'})
    vals={k:str(obj.get(k,'')).strip() for k in ['kind','project_id','title','description','contact','url','author']}
-   if vals['kind'] not in ('idea','project','revive','contact','story'):raise ValueError()
+   if vals['kind'] not in ('idea','project','revive','contact','story','update'):raise ValueError()
    if not 10<=len(vals['description'])<=3000 or not 3<=len(vals['contact'])<=180:raise ValueError()
    if not (re.fullmatch(r'@[A-Za-z0-9_]{5,32}',vals['contact']) or re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',vals['contact']) or valid_linkedin(vals['contact'])):
     return self.send(400,{'error':'Укажите email, Telegram @username или ссылку на профиль LinkedIn.'})
@@ -126,6 +156,8 @@ class Handler(BaseHTTPRequestHandler):
   with connect() as d:
    d.execute('BEGIN IMMEDIATE'); d.execute('DELETE FROM limits WHERE created<?',(now-3600,))
    if d.execute('SELECT count(*) FROM limits WHERE ip=?',(ip,)).fetchone()[0]>=8:return self.send(429,{'error':'Слишком много заявок. Попробуйте через час.'})
+   if vals['kind']=='update':
+    if not d.execute("SELECT 1 FROM projects WHERE id=? AND status IN ('live','archived','development')",(vals['project_id'],)).fetchone():return self.send(400,{'error':'Проект не найден.'})
    if vals['kind'] in ('revive','contact'):
     project=d.execute("SELECT title FROM projects WHERE id=? AND status IN ('live','archived','development')",(vals['project_id'],)).fetchone()
     if not project:return self.send(400,{'error':'Проект не найден.'})

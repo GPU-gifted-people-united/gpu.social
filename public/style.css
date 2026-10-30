@@ -301,3 +301,8 @@ label small{display:block;margin-top:8px;font-size:12px;font-weight:400;color:va
 .story-body figcaption,.story-body .story-source{font-size:14px;color:var(--muted);line-height:1.6;margin-top:12px}
 .story-page .actions{margin:28px 0}
 .story-list .update{display:block}.story-list .update h2{font-size:26px;margin-bottom:14px}.story-list .update p{color:var(--muted);max-width:800px}
+
+.update-form{max-width:680px;display:grid;gap:22px;margin-top:32px}
+.update-form input:not([type=checkbox]),.update-form select,.update-form textarea{width:100%;margin-top:8px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;color:inherit;font:inherit}
+.update-form small{display:block;margin-top:8px;color:var(--muted)}
+#update-status{color:var(--ok);line-height:1.6}

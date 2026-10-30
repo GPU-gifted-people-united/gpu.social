@@ -9,12 +9,18 @@ sub.add_parser('notify')
 sub.add_parser('newsletter-status')
 a=sub.add_parser('posts');a.add_argument('update_id');a.add_argument('--lang',choices=['ru','en'],default='ru')
 a=sub.add_parser('social');a.add_argument('update_id');a.add_argument('--platform',choices=['LinkedIn','Telegram'],required=True);a.add_argument('--url',required=True)
+a=sub.add_parser('approve-update');a.add_argument('id');a.add_argument('--content',required=True,help='Reviewed JSON with title, title_en, summary, summary_en; optional external_url')
 a=sub.add_parser('show');a.add_argument('id')
 a=sub.add_parser('close');a.add_argument('id')
 a=sub.add_parser('publish');a.add_argument('id');a.add_argument('--status',choices=['live','archived','development'],required=True);a.add_argument('--category',required=True)
 a=sub.add_parser('status');a.add_argument('id');a.add_argument('status',choices=['live','archived','development','hidden'])
 a=sub.add_parser('edit');a.add_argument('id');a.add_argument('--title');a.add_argument('--description');a.add_argument('--url');a.add_argument('--author')
 args=p.parse_args();init()
+if args.action=='approve-update':
+ from pathlib import Path
+ try:print(server.publish_update(args.id,json.loads(Path(args.content).read_text())))
+ except (ValueError,OSError) as error:raise SystemExit(str(error))
+ raise SystemExit()
 if args.action=='notify':
  result=notifications.run(server);print(json.dumps(result));raise SystemExit(1 if result.get('failed') else 0)
 if args.action in ('posts','social'):

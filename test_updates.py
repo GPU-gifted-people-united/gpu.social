@@ -97,6 +97,39 @@ class Updates(unittest.TestCase):
    self.assertNotIn('My real project story',self.req(path)[1])
    self.assertNotIn('maker@example.com',self.req(path)[1])
 
+ def test_project_update_review_and_no_duplicate_newsletter(self):
+  payload={'kind':'update','project_id':'aufix','title':'Fleet update','description':'A new fleet feature is ready for testing.','contact':'owner@example.com','url':'https://www.linkedin.com/posts/test-update','consent':True}
+  code,body=self.req('/workshop/api/submissions',payload);self.assertEqual(code,201)
+  sid=json.loads(body)['id'];uid='update-'+sid
+  self.assertNotIn('Fleet update',self.req('/workshop/feed.json')[1])
+  self.assertNotIn('owner@example.com',self.req('/workshop/feed.json')[1])
+  content={'title':'Новое для автопарков','title_en':'Fleet update','summary':'Новая функция готова к тестированию.','summary_en':payload['description']}
+  with self.assertRaises(ValueError):server.publish_update(sid,{'title':'Missing translations'})
+  self.assertEqual(server.publish_update(sid,content),uid)
+  self.assertEqual(server.publish_update(sid,content),uid)
+  with server.connect() as d:
+   self.assertEqual(d.execute('SELECT status FROM submissions WHERE id=?',(sid,)).fetchone()[0],'published')
+   self.assertEqual(d.execute('SELECT count(*) FROM runtime_updates WHERE id=?',(uid,)).fetchone()[0],1)
+  feed=json.loads(self.req('/workshop/feed.json')[1]);item=next(i for i in feed['items'] if i['id']==uid)
+  self.assertEqual(item['social_posts'][0]['platform'],'LinkedIn');self.assertIn(payload['url'],item['content_text'])
+  self.assertNotIn('owner@example.com',json.dumps(item))
+  html=self.req('/en/news/'+uid+'/')[1];self.assertIn('Fleet update',html);self.assertIn('Open update link',html)
+  self.assertEqual(self.subscribe()[0],200)
+  with server.connect() as d:d.execute("UPDATE subscribers SET status='active',confirmed=?",(int(time.time())-1,))
+  notifications.enqueue(server);notifications.enqueue(server)
+  with server.connect() as d:self.assertEqual(d.execute("SELECT count(*) FROM notification_jobs WHERE update_id=? AND kind='news'",(uid,)).fetchone()[0],1)
+  with server.connect() as d:d.execute("UPDATE projects SET status='hidden' WHERE id='aufix'")
+  self.assertNotIn(uid,self.req('/workshop/feed.json')[1]);self.assertEqual(self.req('/en/news/'+uid+'/')[0],404)
+
+ def test_update_form_and_project_validation(self):
+  code,html=self.req('/en/updates/new/');self.assertEqual(code,200)
+  self.assertIn('Suggest a project update',html);self.assertIn('value="aufix"',html)
+  self.assertNotIn('value="secret-hidden"',html);self.assertIn('noindex,follow',html)
+  payload={'kind':'update','title':'Project update','description':'Useful new project changes.','contact':'owner@example.com','consent':True}
+  for pid in ('','missing','secret-hidden'):
+   self.assertEqual(self.req('/workshop/api/submissions',{**payload,'project_id':pid})[0],400)
+  self.assertIn('/en/updates/new/?project=aufix',self.req('/en/projects/aufix/')[1])
+
  def test_linked_post_news_and_feed(self):
   uid='gpu-new-projects-2026-10-19';code,page=self.req('/en/news/'+uid+'/');self.assertEqual(code,200);self.assertIn('Support on LinkedIn',page);self.assertIn('news-post-text',page)
   with server.connect() as d:d.execute('INSERT INTO update_posts VALUES(?,?,?,?)',(uid,'Telegram','https://t.me/GiftedPeopleUnited/42',int(time.time())))
