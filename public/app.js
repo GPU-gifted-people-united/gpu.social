@@ -295,3 +295,21 @@ document.addEventListener('click', event => {
   frame.allow = 'fullscreen; gamepad';
   container.replaceChildren(frame); dialog.showModal();
 });
+
+if ($('#update-form')) {
+  const form = $('#update-form'), project = new URLSearchParams(location.search).get('project');
+  if ([...form.elements.project_id.options].some(option => option.value === project)) form.elements.project_id.value = project;
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('[type=submit]'), status = $('#update-status');
+    button.disabled = true; status.textContent = english ? 'Sending…' : 'Отправляем…';
+    try {
+      const data = Object.fromEntries(new FormData(form)); data.kind = 'update'; data.consent = form.elements.consent.checked;
+      const response = await fetch('/workshop/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      const result = await response.json();
+      if (!response.ok) throw Error(tr(result.error || 'Не удалось отправить форму.'));
+      form.reset(); status.textContent = english ? 'Update received. GPU will review it before publishing. Your contact stays private.' : 'Обновление принято. Команда GPU проверит его перед публикацией. Контакт останется приватным.';
+    } catch (error) { status.textContent = error.message || (english ? 'Could not send. Please try again.' : 'Не удалось отправить. Попробуй ещё раз.'); }
+    finally { button.disabled = false; }
+  });
+}

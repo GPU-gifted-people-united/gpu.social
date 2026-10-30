@@ -89,3 +89,25 @@ Each guide has a ready-to-copy RU/EN post. Publishing social posts still follows
 
 The story archive also accepts kind=story submissions using the existing private moderation inbox,
 input validation and rate limit. They are never automatically inserted into public stories or feeds.
+
+## Community project updates
+
+“Suggest an update” is available beside What’s new, on the news archive and on project pages
+(which preselect the project). RU /workshop/updates/new/, EN /en/updates/new/.
+The public form accepts a project, headline, description, optional URL and private review contact.
+Submissions have kind=update, status=pending, and share the existing validation and rate limit.
+They are not published automatically. Review the sender's relationship to the project and the
+public destination of any URL before approving; the form is an editorial inbox, not an ownership login.
+
+Use manage.py inbox / show ID, then prepare a reviewed JSON file with:
+title, title_en, summary, summary_en, and optional external_url (empty string removes it).
+Approve with: python3 manage.py approve-update ID --content /private/path/reviewed.json
+This requires complete RU/EN copy and a still-public project. Approval atomically marks the
+submission published and creates one stable update-ID record in runtime_updates.
+Re-running approval returns the same ID, without another news item or newsletter delivery.
+Use manage.py close ID to reject a pending submission.
+
+The approved update appears on permanent RU/EN news pages, the website feed, RSS/JSON,
+sitemap and the normal opt-in newsletter queue. Reviewed public LinkedIn/Telegram post URLs
+also become social support links for the existing agent workflow. Private contacts are never copied.
+Hiding the linked project removes its submitted updates from public discovery and queued delivery.
