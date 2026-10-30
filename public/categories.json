@@ -88,11 +88,12 @@
       "en": "Useful tools for work"
     },
     "description": {
-      "ru": "Небольшие утилиты сообщества GPU. Начните с Codex Limits — виджета macOS для наблюдения за лимитами отдельных аккаунтов Codex.",
-      "en": "Small utilities from the GPU community. Start with Codex Limits, a macOS widget for monitoring usage across separate Codex accounts."
+      "ru": "Создавайте приложения с OwlMeans Platform и следите за лимитами Codex с виджетом Codex Limits для macOS. Инструменты сообщества GPU с примерами использования.",
+      "en": "Build applications with OwlMeans Platform and monitor Codex usage with the Codex Limits macOS widget. GPU community tools with practical examples."
     },
     "projects": [
-      "codex-limits"
+      "codex-limits",
+      "owlmeans"
     ]
   },
   {
@@ -106,13 +107,14 @@
       "en": "B2B tools for businesses"
     },
     "description": {
-      "ru": "Сравнивайте цены конкурентов, разбирайте клиентские разговоры и управляйте расходами автопарка. Познакомьтесь с проектами и свяжитесь с разработчиками.",
-      "en": "Compare competitor prices, review customer conversations and manage fleet expenses. Explore the projects and contact their developers."
+      "ru": "Сравнивайте цены, анализируйте клиентские разговоры, управляйте автопарком или передайте операционные задачи внешнему COO. Проекты и услуги сообщества GPU для бизнеса.",
+      "en": "Compare prices, analyse customer conversations, manage a fleet or delegate operations to an external COO. Projects and services from the GPU community for businesses."
     },
     "projects": [
       "price-monitor",
       "bayun",
-      "aufix"
+      "aufix",
+      "lefine"
     ]
   }
 ]
