@@ -256,5 +256,41 @@
       "ru": "Тараньте соперников и убегайте от косилки, чтобы остаться последним бараном на лугу.",
       "en": "Ram opponents and outrun the mower to be the last ram on the meadow."
     }
+  },
+  "lefine": {
+    "updated": "2026-10-31",
+    "entity_type": "Service",
+    "audience": {
+      "ru": "Техническим фаундерам, которым регулярные операционные задачи мешают заниматься продуктом.",
+      "en": "Technical founders whose recurring operational work takes time away from building."
+    },
+    "example": {
+      "ru": "По описанию автора, оператор берёт на себя повторяющиеся задачи поддержки и администрирования, подбирая инструменты и агентов.",
+      "en": "According to the author, an operator takes over recurring support and administrative workflows, using tools and agents."
+    },
+    "access": {
+      "ru": "Автор предлагает модель участия в выручке. Объём задач и условия нужно обсудить с Konrad. Ссылка из заявки ведёт в интерфейс Lefine.",
+      "en": "The author proposes revenue sharing. Discuss scope and terms with Konrad. The submitted link opens the Lefine interface."
+    }
+  },
+  "owlmeans": {
+    "updated": "2026-10-31",
+    "author_type": "Organization",
+    "audience": {
+      "ru": "Авторам новых приложений и тем, кто хочет переработать существующий прототип.",
+      "en": "People starting a new application or rebuilding an existing prototype."
+    },
+    "example": {
+      "ru": "Опишите пользователей и их задачу, проверьте спецификацию и последовательно создавайте рабочие сценарии. Существующий проект можно импортировать из GitHub для конвертации.",
+      "en": "Describe the users and their task, review the specification and build connected user flows. An existing project can be imported from GitHub for conversion."
+    },
+    "platforms": {
+      "ru": "Web.",
+      "en": "Web."
+    },
+    "access": {
+      "ru": "Платформа в alpha, конвертер в beta. Перенос рабочей базы данных и подключение внешних сервисов требуют отдельного планирования.",
+      "en": "Platform in alpha; converter in beta. Moving a live database and reconnecting external services require separate planning."
+    }
   }
 }

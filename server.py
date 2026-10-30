@@ -12,6 +12,8 @@ ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
 EN_PROJECTS={
+ 'lefine':('B2B','An external COO service for technical founders: recurring operations, support and administrative workflows handled by an accountable operator using tools and agents. The author proposes a revenue-share model.'),
+ 'owlmeans':('Tools','Build an application from user stories: review the specification, generate its foundation and develop one useful flow at a time. Also offers conversion of existing GitHub projects. Alpha access; converter in beta.'),
  'callimate':('Learning','An iOS reference app for Chinese calligraphy: search characters, study copybook examples and organise practice before writing on paper.'),
  'baattle-royale':('Games','A free browser battle royale of rams. Ram opponents, hide under trees and outrun the mower. Play solo or team up with friends, without downloading.'),
  'video-metadata-cleaner':('Video', 'Removes C2PA provenance and editing metadata from videos without changing picture or sound. Removal of platform AI-info labels is not guaranteed.'),
