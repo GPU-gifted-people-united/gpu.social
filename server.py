@@ -12,6 +12,9 @@ ROOT=Path(__file__).parent
 DB=Path(os.environ.get('GPU_DB',str(ROOT/'data/workshop.sqlite3')))
 BASE='/workshop'
 EN_PROJECTS={
+ 'tiday':("Everyday life","A daily planner and focus timer for iPhone and iPad. Pick a scheduled task, start a countdown or count-up session, and review your session history. Includes reminders and quick notes."),
+ 'sendhop':("Tools","Send files from your iPhone or iPad to a device on the same Wi-Fi network or hotspot. The recipient can receive files in a browser on a trusted network. No account or uploads to the SendHop cloud."),
+ 'devmate':("Tools","A developer toolbox for iPhone and iPad. Check JSON, convert timestamps, inspect colours, and test deep links. Includes QR code tools and device information."),
  'lefine':('B2B','An external COO service for technical founders: recurring operations, support and administrative workflows handled by an accountable operator using tools and agents. The author proposes a revenue-share model.'),
  'owlmeans':('Tools','Build an application from user stories: review the specification, generate its foundation and develop one useful flow at a time. Also offers conversion of existing GitHub projects. Alpha access; converter in beta.'),
  'callimate':('Learning','An iOS reference app for Chinese calligraphy: search characters, study copybook examples and organise practice before writing on paper.'),
